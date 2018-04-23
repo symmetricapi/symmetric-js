@@ -1,7 +1,7 @@
 About
 -------------------------------
 
-Symmetric provide observable model and collection classes with support for field specifications that mirror backend sources with encoding functions and validation rules. 
+Symmetric provides observable model and collection classes with support for field specifications that mirror backend sources with encoding functions and validation rules. 
 
 Requirements
 -------------------------------
@@ -58,7 +58,7 @@ Subclassing
 
 ### Model
 
-* `toJSON()` - return data for JSON stringification. The base method
+* `toJSON()` - return data for JSON stringification. The base method will encode each field
 * `defaults()` - return an object of default values for the fields when creating a new instance
 * `field(key)` - return the field specification for the given attribute key
 * `url(options, operation)` - return the url to use with the fetch, save, or delete
