@@ -1,5 +1,6 @@
 import config from './config';
 import Observable from './Observable';
+import Cancelable from './Cancelable';
 import { decode, encode, isPlainObject, copyObject, extendObject, generateCid } from './utils';
 import validate from './validate';
 
@@ -229,6 +230,8 @@ class Model extends Observable {
   }
 
   _sync(syncOptions, operation) {
+    this._cancelable = syncOptions.cancelable || new Cancelable();
+    syncOptions.cancelable = this._cancelable; // eslint-disable-line no-param-reassign
     return new Promise((resolve, reject) => {
       config.sync(syncOptions)
         .then(this.parse.bind(this))
@@ -280,6 +283,8 @@ class Model extends Observable {
   destroy(options = {}) {
     const syncOptions = extendObject({ method: 'DELETE' }, options);
     syncOptions.url = this.url(options, 'destroy');
+    this._cancelable = syncOptions.cancelable || new Cancelable();
+    syncOptions.cancelable = this._cancelable;
     return new Promise((resolve, reject) => {
       config.sync(syncOptions).then(() => {
         // Set as deleted by unsetting the id
@@ -292,6 +297,13 @@ class Model extends Observable {
         resolve(this);
       }).catch(reject);
     });
+  }
+
+  cancelSync() {
+    if (this._cancelable && this._cancelable.isValid) {
+      this._cancelable.cancel();
+      this._cancelable = null;
+    }
   }
 }
 

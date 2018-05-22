@@ -1,6 +1,7 @@
 import config from './config';
 import Model from './Model';
 import Observable from './Observable';
+import Cancelable from './Cancelable';
 import { extendObject, generateCid, getAttr } from './utils';
 
 /**
@@ -213,6 +214,8 @@ class Collection extends Observable {
   fetch(options = {}) {
     const syncOptions = extendObject({ method: 'GET' }, options);
     syncOptions.url = this.url(options, 'fetch');
+    this._cancelable = syncOptions.cancelable || new Cancelable();
+    syncOptions.cancelable = this._cancelable;
     return new Promise((resolve, reject) => {
       config.sync(syncOptions)
         .then(this.parse.bind(this))
@@ -233,6 +236,8 @@ class Collection extends Observable {
   save(options = {}) {
     const syncOptions = extendObject({ method: 'PUT' }, options);
     syncOptions.url = this.url(options, 'save');
+    this._cancelable = syncOptions.cancelable || new Cancelable();
+    syncOptions.cancelable = this._cancelable;
     const dirtyCollection = this.filter(item => !item.isDirty);
     const cb = (model) => {
       const item = dirtyCollection.remove(model || dirtyCollection.at(0));
@@ -240,6 +245,13 @@ class Collection extends Observable {
       return item.save(syncOptions).then(cb);
     };
     return Promise.resolve(null).then(cb);
+  }
+
+  cancelSync() {
+    if (this._cancelable && this._cancelable.isValid) {
+      this._cancelable.cancel();
+      this._cancelable = null;
+    }
   }
 }
 
