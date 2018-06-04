@@ -5,7 +5,7 @@ import Collection from './Collection';
 import Model from './Model';
 import Observable from './Observable';
 import { serialize, deserialize, register } from './serialization';
-import utils from './utils';
+import * as utils from './utils';
 import validate from './validate';
 
 export default {
