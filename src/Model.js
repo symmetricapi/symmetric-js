@@ -7,6 +7,7 @@ import validate from './validate';
 /**
  * Model instances manage a set of attributes exposed through get/set methods.
  * Updates observers with change:<key>, sync:fetch|save|destroy, and validate:true|false
+ * @param {Object|Model} [data] - Initial values to set the model's attributes
  * @class
  */
 class Model extends Observable {
@@ -63,33 +64,36 @@ class Model extends Observable {
     return model;
   }
 
+  /** @member */
   get id() {
     return this.attributes[this.idAttribute];
   }
 
+  /** @member {Boolean} */
   get isNew() {
     return !(this.idAttribute in this.attributes);
   }
 
+  /** @member {Boolean} */
   get isDeleted() {
     return !(this.idAttribute in this.attributes) && (this.idAttribute in this.dirtyAttributes);
   }
 
+  /** @member {Boolean} */
   get isDirty() {
     return !!Object.keys(this.dirtyAttributes).length;
   }
 
+  /** @member {Boolean} */
   get isValid() {
     return !Object.keys(this.errors).length;
   }
 
-  /**
-   * Override this method to return an object to be used as default attributes on a new instance.
-   */
+  /** Override to return an object to be used as default attributes on a new instance. */
   defaults() {}
 
   /**
-   * Override this method to return a field specification object for the attribute.
+   * Override to return a field specification object for the attribute.
    * @param {string} key - the attribute to get a field spec for
    */
   field(key) {} // eslint-disable-line no-unused-vars
@@ -105,16 +109,35 @@ class Model extends Observable {
   subtitle(key) { return this.fieldProp(key, 'subtitle'); }
   instructions(key) { return this.fieldProp(key, 'instructions'); }
 
+  /**
+   * Returns true if the attribute key can be found in this model.
+   * @param {string} key - The key to check
+   */
   has(key) {
     if (key === 'id') return this.idAttribute in this.attributes;
     return key in this.attributes;
   }
 
+  /**
+   * Returns the value of the attribute key or undefined if not present.
+   * @param {string} key - The key to get
+   */
   get(key) {
     if (key === 'id') return this.id;
     return this.attributes[key];
   }
 
+  _setValidateTimeout() {
+    clearTimeout(this._vtid);
+    this._vtid = setTimeout(this.validate.bind(this), config.validateTimeout);
+  }
+
+  /**
+   * Sets a value of the attribute key.
+   * Invokes change notification and validates the model after setting.
+   * @param {string|Object} key - The key to set or an plain object of key/values
+   * @param {*} value - The value of the attribute or undefined to unset() the key
+   */
   set(key, value) {
     if (this.isDeleted) throw new Error('Attempting to modify model after it has been deleted.');
     if (isPlainObject(key)) {
@@ -137,20 +160,28 @@ class Model extends Observable {
         delete this.dirtyAttributes[key];
       }
       this.invokeObservers('change', key);
-      this.validate(true);
+      this._setValidateTimeout();
     }
     return this;
   }
 
+  /**
+   * Remove the given attribute completely from the model.
+   * @param {string} key - The attribute key to remove
+   */
   unset(key) {
     if (this.isDeleted) throw new Error('Attempting to modify model after it has been deleted.');
     if (key === 'id' && this.idAttribute !== 'id') return this.unset(this.idAttribute);
     delete this.attributes[key];
     this.invokeObservers('change', key);
-    this.validate(true);
+    this._setValidateTimeout();
     return this;
   }
 
+  /**
+   * Undo any changes made to an attribute back to the original synced value.
+   * @param {string} key - The attribute key to revert
+   */
   revert(key) {
     if (key === 'id' && this.idAttribute !== 'id') return this.revert(this.idAttribute);
     if (key in this.dirtyAttributes) {
@@ -159,26 +190,48 @@ class Model extends Observable {
     return this;
   }
 
+  /**
+   * Encode an attribute into a string form.
+   * @param {string} key - The attribute key to encode
+   */
   encode(key) {
     return encode(this.attributes[key], this.encoding(key));
   }
 
+  /**
+   * Decode a string value into a native Javascript value.
+   * @param {string} key - The attribute key to set with the decoded value
+   * @param {string} value - The value to decode
+   */
   decode(key, value) {
     return this.set(key, decode(value, this.encoding(key)));
   }
 
+  /**
+   * Format an validation error into a readable string.
+   * @param {*} key - The attribute key
+   */
   message(key) {
     const error = this.errors[key];
     return (error && config.formatErrorMessage(this.field(key), error, this.attributes[key])) || '';
   }
 
-  validate(debounce) {
-    if (debounce) {
-      clearTimeout(this._vtid);
-      this._vtid = setTimeout(this.validate.bind(this), config.validateTimeout);
-      return true;
-    }
-    this.errors = {};
+  /**
+   * Returns true if the key has a validation error.
+   * @param {*} key - The attribute key
+   */
+  hasError(key) {
+    return !!this.errors[key];
+  }
+
+  /**
+   * Validate each attribute according to their rules.
+   * Override to do custom validation before calling super with an errors object.
+   * @param {Object} [errors] - A plain object of attribute keyed errors
+   * @returns true if the model is valid with no errors
+   */
+  validate(errors) {
+    this.errors = extendObject({}, errors);
     Object.keys(this.attributes).forEach((key) => {
       let rule = this.rule(key);
       if (rule) {
@@ -211,8 +264,9 @@ class Model extends Observable {
 
   /**
    * Override to provide custom parsing of data received from the backend or for a new instance.
+   * Also override to create specific models/collections on any sub-objects/arrays.
    * Do not make assumptions about the data being passed.
-   * Use this to create specific collections on any sub arrays within a model.
+   * Remember to call super as the base implementation decodes any string values that need decoding.
    * @param {Object} data
    */
   parse(data) {
@@ -258,12 +312,21 @@ class Model extends Observable {
     });
   }
 
+  /**
+   * Get and set attributes from the backend via the sync function.
+   * @param {Object} [options] - options to pass to the sync function
+   */
   fetch(options = {}) {
     const syncOptions = extendObject({ method: 'GET' }, options);
     syncOptions.url = this.url(options, 'fetch');
     return this._sync(syncOptions, 'fetch');
   }
 
+  /**
+   * Sent the model attributes to the backend to be saved.
+   * If options.method === 'PATCH' then only the dirtyAttributes will be synced.
+   * @param {Object} [options] - options to pass to the sync function
+   */
   save(options = {}) {
     const syncOptions = extendObject({ method: this.isNew ? 'POST' : 'PUT' }, options);
     syncOptions.url = this.url(options, 'save');
@@ -280,6 +343,11 @@ class Model extends Observable {
     return this._sync(syncOptions, 'save');
   }
 
+  /**
+   * Delete the model from the backend by using the DELETE method.
+   * The model will become readonly after the deletion.
+   * @param {Object} [options] - options to pass to the sync function
+   */
   destroy(options = {}) {
     const syncOptions = extendObject({ method: 'DELETE' }, options);
     syncOptions.url = this.url(options, 'destroy');
@@ -299,6 +367,7 @@ class Model extends Observable {
     });
   }
 
+  /** Cancel the current sync operation (fetch, save, or destroy). */
   cancelSync() {
     if (this._cancelable && this._cancelable.isValid) {
       this._cancelable.cancel();

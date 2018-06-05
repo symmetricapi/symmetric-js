@@ -20,14 +20,18 @@ class Cancelable extends Observable {
     return this._valid;
   }
 
+  /** Set to canceled and invoke the cancel notification. */
   cancel() {
+    if (this._canceled) return;
     this._canceled = true;
     this._valid = false;
     this.invokeObservers('cancel');
     this.observers = {};
   }
 
+  /** Set to invalid and invoke the invalidate notification. */
   invalidate() {
+    if (!this._valid) return;
     this._valid = false;
     this.invokeObservers('invalidate');
     this.observers = {};

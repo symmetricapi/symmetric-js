@@ -119,6 +119,7 @@ export function prepareUrl(url, params, underscoreParams) {
   return url.indexOf('?') === -1 ? `${url}?${encoded}` : `${url}&${encoded}`;
 }
 
+/** Returns true if a url is of the same origin (protocol, hostname, and port) as the window. */
 export function isSameOrigin(url) {
   if (!url) return false;
   if (url[0] === '/' && url[1] !== '/') return true;
@@ -129,6 +130,9 @@ export function isSameOrigin(url) {
   return url.substr(0, origin.length) === origin;
 }
 
+/**
+ * Encode a value using config.encoders.
+ */
 export function encode(value, type) {
   if (value === null || value === undefined) return '';
   if (type in config.encoders) return config.encoders[type](value);

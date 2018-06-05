@@ -7,6 +7,7 @@ import { extendObject, generateCid, getAttr } from './utils';
 /**
  * Collection is manages an array of items (Model instances).
  * Updates observers with add:<cid>, remove:<cid>, reset, sync:fetch|save, and sort
+ * @param {Array|Collection} [items] - An array or collection of items to initially add
  * @class
  */
 class Collection extends Observable {
@@ -18,6 +19,7 @@ class Collection extends Observable {
     this.add(Array.isArray(items) ? this.parse(items) : items);
   }
 
+  /** Create a mutable JSON-compatible copy of the items array. */
   toJSON() {
     return Array.from(this.items);
   }
@@ -36,10 +38,17 @@ class Collection extends Observable {
     return c;
   }
 
+  /** @member {Number} */
   get length() {
     return this.items.length;
   }
 
+  /**
+   * Add an item or items to the collection.
+   * Invokes an "add" notification and sorts the new array if comparator is set.
+   * @param {Model|Collection|Array} items - One or more models to add to items
+   * @param {Boolean} [unshift] - If true add as the first item
+   */
   add(items, unshift) {
     if (!items) return this;
     if (items instanceof Collection) return this.add(items.items);
@@ -70,7 +79,8 @@ class Collection extends Observable {
 
   /**
    * Remove one or more items from the collection.
-   * @param {*} items - model, cid, array of models/cids, or a filter function
+   * Invokes a "remove" notification and sorts the new array if comparator is set.
+   * @param {Model|string|Array|Function} items - model, cid, array of models/cids, or a filter func
    * @returns {Array|Object} - the model or array of models removed
    */
   remove(items) {
@@ -135,23 +145,37 @@ class Collection extends Observable {
     return clone;
   }
 
+  /** Returns true if there is an item matching the filter args. */
   has(args) {
     if (args instanceof Model) return args.collection === this;
     return this.filter(args).length > 0;
   }
 
+  /** Returns the first item matching the filter args. */
   get(args) {
     return this.filter(args).at(0);
   }
 
+  /**
+   * Get the item at a 0-based index.
+   * @param {Number} index - The index
+   */
   at(index) {
     return this.items[index];
   }
 
+  /**
+   * Call a function for each item in the colleciton.
+   * @param {Function} callback - The function to call
+   */
   forEach(callback) {
     this.items.forEach(callback);
   }
 
+  /**
+   * Sort the items in place. When sorting using an attribute key a "-" prefix means descending.
+   * @param {Function|string} comparator - A comparator function or attribute key
+   */
   sort(comparator) {
     let fun = comparator;
     let reverse = false;
@@ -175,7 +199,7 @@ class Collection extends Observable {
   }
 
   /**
-   * Override this method and return the model class necessary to make a new instance with.
+   * Override to return the model class necessary to make a new instance with.
    * @param {Object} item - raw attribute data yet to be put into a model
    * @returns {class}
    */
@@ -208,8 +232,8 @@ class Collection extends Observable {
   }
 
   /**
-   * Loads the collection from the server and merges into any existing items already present.
-   * @param {Object} options
+   * Loads the collection from the backend and merges into any existing items already present.
+   * @param {Object} [options] - options to pass to the sync function
    */
   fetch(options = {}) {
     const syncOptions = extendObject({ method: 'GET' }, options);
@@ -230,7 +254,7 @@ class Collection extends Observable {
 
   /**
    * Saves every dirty item to the backend.
-   * @param {Object} [options] - Options to use during the save operation
+   * @param {Object} [options] - options to pass to the sync function
    * @returns A single Promise that will resolve after all dirty items were saved.
    */
   save(options = {}) {
@@ -247,6 +271,7 @@ class Collection extends Observable {
     return Promise.resolve(null).then(cb);
   }
 
+  /** Cancel the current sync operation (fetch or save). */
   cancelSync() {
     if (this._cancelable && this._cancelable.isValid) {
       this._cancelable.cancel();
