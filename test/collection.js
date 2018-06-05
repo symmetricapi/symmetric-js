@@ -1,5 +1,6 @@
 const assert = require('assert');
 const Collection = require('../src/Collection').default;
+const CancelError = require('../src/CancelError').default;
 
 const users = new Collection();
 users.comparator = 'username';
@@ -23,5 +24,15 @@ users.fetch().then(() => {
 }).catch((err) => {
   console.log(err);
 });
+
+// Test cancelations
+const cancelingUsers = new Collection();
+cancelingUsers.url = () => 'http://jsonplaceholder.typicode.com/users';
+cancelingUsers.fetch().then(() => {
+  assert(false);
+}).catch((err) => {
+  assert(err instanceof CancelError);
+});
+cancelingUsers.cancelSync();
 
 console.log('Collection tests passed!');

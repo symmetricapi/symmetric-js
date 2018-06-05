@@ -1,5 +1,2 @@
-class CancelError extends Error {
-
-}
-
+class CancelError { }
 export default CancelError;

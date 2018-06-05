@@ -71,7 +71,7 @@ export function sync(options) {
     .then((response) => {
       // Detect if there is no AbortController, but the fetch was canceled anyways
       if (cancelable && cancelable.isCanceled) {
-        return Promise.reject(new CancelError('Canceled'));
+        return Promise.reject(new CancelError());
       } else if (!response.ok) {
         return Promise.reject(response);
       }
@@ -93,7 +93,7 @@ export function sync(options) {
     .then(response => JSON.parse(response, syncCamelCase ? camelCaseReviver : null))
     .catch((err) => {
       if (err && AbortError && err instanceof AbortError) {
-        throw new CancelError('Canceled');
+        throw new CancelError();
       }
       throw err;
     });
