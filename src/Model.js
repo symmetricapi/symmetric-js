@@ -254,6 +254,7 @@ class Model extends Observable {
    * @param {string} operation - fetch, save, or destroy
    */
   url(options, operation) { // eslint-disable-line no-unused-vars
+    if (options.url) return options.url;
     if (this.collection) {
       const url = this.collection.url(options, operation);
       if (!this.isNew()) return `${url.replace(/\/$/, '')}/${this.id}`;
@@ -268,6 +269,7 @@ class Model extends Observable {
    * Do not make assumptions about the data being passed.
    * Remember to call super as the base implementation decodes any string values that need decoding.
    * @param {Object} data
+   * @returns The parsed data
    */
   parse(data) {
     if (!data) return data;
@@ -315,6 +317,7 @@ class Model extends Observable {
   /**
    * Get and set attributes from the backend via the sync function.
    * @param {Object} [options] - options to pass to the sync function
+   * @returns A Promise that will resolve with this model instance
    */
   fetch(options = {}) {
     const syncOptions = extendObject({ method: 'GET' }, options);
@@ -326,6 +329,7 @@ class Model extends Observable {
    * Sent the model attributes to the backend to be saved.
    * If options.method === 'PATCH' then only the dirtyAttributes will be synced.
    * @param {Object} [options] - options to pass to the sync function
+   * @returns A Promise that will resolve with this model instance
    */
   save(options = {}) {
     const syncOptions = extendObject({ method: this.isNew ? 'POST' : 'PUT' }, options);
@@ -347,6 +351,7 @@ class Model extends Observable {
    * Delete the model from the backend by using the DELETE method.
    * The model will become readonly after the deletion.
    * @param {Object} [options] - options to pass to the sync function
+   * @returns A Promise that will resolve with this model instance
    */
   destroy(options = {}) {
     const syncOptions = extendObject({ method: 'DELETE' }, options);
@@ -373,6 +378,16 @@ class Model extends Observable {
       this._cancelable.cancel();
       this._cancelable = null;
     }
+  }
+
+  /**
+   * Create a new model and fetch it.
+   * @param {Object} options - The fetch options, be sure to include a url here
+   * @returns A Promise that will later resolve to the new model
+   */
+  static fetch(options) {
+    const model = new Model();
+    return model.fetch(options);
   }
 }
 

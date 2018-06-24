@@ -213,6 +213,7 @@ class Collection extends Observable {
    * @param {string} operation - fetch, save, or destroy
    */
   url(options, operation) { // eslint-disable-line no-unused-vars
+    if (options.url) return options.url;
     return '';
   }
 
@@ -220,6 +221,7 @@ class Collection extends Observable {
    * Override to provide custom parsing of data received from the backend or for a new instance.
    * Do not make assumptions about the data being passed.
    * @param {Array} data
+   * @returns An array of parsed data
    */
   parse(data) {
     if (!Array.isArray(data)) return data;
@@ -234,6 +236,7 @@ class Collection extends Observable {
   /**
    * Loads the collection from the backend and merges into any existing items already present.
    * @param {Object} [options] - options to pass to the sync function
+   * @returns A Promise that will resolve with this collection instance
    */
   fetch(options = {}) {
     const syncOptions = extendObject({ method: 'GET' }, options);
@@ -255,7 +258,7 @@ class Collection extends Observable {
   /**
    * Saves every dirty item to the backend.
    * @param {Object} [options] - options to pass to the sync function
-   * @returns A single Promise that will resolve after all dirty items were saved.
+   * @returns A Promise that will resolve with this collection after all dirty items were saved.
    */
   save(options = {}) {
     const syncOptions = extendObject({ method: 'PUT' }, options);
@@ -277,6 +280,16 @@ class Collection extends Observable {
       this._cancelable.cancel();
       this._cancelable = null;
     }
+  }
+
+  /**
+   * Create a new collection and fetch it.
+   * @param {Object} options - The fetch options, be sure to include a url here
+   * @returns A Promise that will later resolve to the new collection
+   */
+  static fetch(options) {
+    const collection = new Collection();
+    return collection.fetch(options);
   }
 }
 
