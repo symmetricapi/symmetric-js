@@ -84,29 +84,31 @@ export function toUnderscore(str) {
 }
 
 /**
- * Does a deep conversion of underscore-based attributes to camelCase.
+ * Does a conversion of underscore-based attributes to camelCase.
  * @param {Object} obj
+ * @param {Boolean} [deep] - if true will do a deep conversion into any sub-objects
  */
-export function camelCaseObject(obj) {
+export function camelCaseObject(obj, deep) {
   if (!isPlainObject(obj)) return obj;
   const converted = {};
   for (const key in obj) {
     const value = obj[key];
-    converted[toCamelCase(key)] = (typeof value === 'object' ? camelCaseObject(value) : value);
+    converted[toCamelCase(key)] = (deep && typeof value === 'object' ? camelCaseObject(value, deep) : value);
   }
   return converted;
 }
 
 /**
- * Does a deep conversion of camelCase-based attributes to underscore.
+ * Does a conversion of camelCase-based attributes to underscore.
  * @param {Object} obj
+ * @param {Boolean} [deep] - if true will do a deep conversion into any sub-objects
  */
-export function underscoreObject(obj) {
+export function underscoreObject(obj, deep) {
   if (!isPlainObject(obj)) return obj;
   const converted = {};
   for (const key in obj) {
     const value = obj[key];
-    converted[toUnderscore(key)] = (typeof value === 'object' ? underscoreObject(value) : value);
+    converted[toUnderscore(key)] = (deep && typeof value === 'object' ? underscoreObject(value, deep) : value);
   }
   return converted;
 }
@@ -130,15 +132,14 @@ export function isSameOrigin(url) {
   return url.substr(0, origin.length) === origin;
 }
 
-/**
- * Encode a value using config.encoders.
- */
+/** Encode a value using config.encoders. */
 export function encode(value, type) {
   if (value === null || value === undefined) return '';
   if (type in config.encoders) return config.encoders[type](value);
   return value.toString();
 }
 
+/** Decode a value using config.decoders. */
 export function decode(value, type) {
   if (!value) return null;
   if (type in config.decoders) return config.decoders[type](value);

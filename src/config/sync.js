@@ -1,19 +1,9 @@
 import CancelError from '../CancelError';
-import { getRoot, extendObject, prepareUrl, isSameOrigin, isPlainObject, toCamelCase, camelCaseObject, underscoreObject } from '../utils';
+import { getRoot, extendObject, prepareUrl, isSameOrigin, toCamelCase, camelCaseObject, underscoreObject } from '../utils';
 
 const fetch = getRoot('fetch');
 const AbortController = getRoot('AbortController');
 const AbortError = getRoot('AbortError');
-
-export function camelCaseReviver(key, value) {
-  if (isPlainObject(value)) return camelCaseObject(value);
-  return value;
-}
-
-export function underscoreReplacer(key, value) {
-  if (isPlainObject(value)) return underscoreObject(value);
-  return value;
-}
 
 export const syncConfig = {
   syncCamelCase: true,
@@ -54,7 +44,7 @@ export function sync(options) {
   }
   // If body is given as data encode it as set in saveEncoding
   if (options.data) {
-    const replacer = (saveUnderscore ? underscoreReplacer : null);
+    const replacer = (saveUnderscore ? (k, v) => underscoreObject(v) : null);
     let contentType;
     if (saveEncoding === 'form' || saveEncoding === 'form-json') {
       const formJson = (saveEncoding === 'form-json');
@@ -114,7 +104,7 @@ export function sync(options) {
       }
       return response.text();
     })
-    .then(response => JSON.parse(response, syncCamelCase ? camelCaseReviver : null))
+    .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
     .catch((err) => {
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();

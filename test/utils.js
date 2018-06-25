@@ -20,6 +20,7 @@ const camelCased = {
   subObject: {
     key: 'value',
     test: new TestObj(),
+    keyTest: '',
   },
 };
 
@@ -30,6 +31,7 @@ const underscored = {
   sub_object: {
     key: 'value',
     test: new TestObj(),
+    key_test: '',
   },
 };
 
@@ -61,8 +63,11 @@ assert.strictEqual(extended.key, 'value');
 assert.strictEqual(toCamelCase('not_camel_case'), 'notCamelCase');
 assert.strictEqual(toUnderscore('notUnderscoreCasing'), 'not_underscore_casing');
 
-assert.deepStrictEqual(camelCased, camelCaseObject(underscored));
-assert.deepStrictEqual(underscored, underscoreObject(camelCased));
+assert.notDeepStrictEqual(camelCased, camelCaseObject(underscored));
+assert.notDeepStrictEqual(underscored, underscoreObject(camelCased));
+
+assert.deepStrictEqual(camelCased, camelCaseObject(underscored, true));
+assert.deepStrictEqual(underscored, underscoreObject(camelCased, true));
 
 const cid = generateCid();
 assert(cid !== generateCid());
