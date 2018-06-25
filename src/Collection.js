@@ -218,6 +218,16 @@ class Collection extends Observable {
   }
 
   /**
+   * Override this to set shared options for subclassed collections before calling config.sync().
+   * Be sure to call super unless using a different sync backend.
+   * @param {Object} [options] - options to pass to the sync function
+   * @returns A Promise that will resolve with this collection instance
+   */
+  sync(options) {
+    return config.sync(options);
+  }
+
+  /**
    * Override to provide custom parsing of data received from the backend or for a new instance.
    * Do not make assumptions about the data being passed.
    * @param {Array} data
@@ -244,7 +254,7 @@ class Collection extends Observable {
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable;
     return new Promise((resolve, reject) => {
-      config.sync(syncOptions)
+      this.sync(syncOptions)
         .then(this.parse.bind(this))
         .then((data) => {
           this.add(data);

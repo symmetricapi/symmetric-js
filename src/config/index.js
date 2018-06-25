@@ -5,7 +5,6 @@ import { sync, syncConfig } from './sync';
 
 export default {
   Component: Object,
-  h: () => {},
   encoders,
   decoders,
   inputEncodings,
