@@ -32,6 +32,7 @@ Basic options are:
 * `url` - required url to fetch
 * `params` - will be added to url as query string args
 * `data` - will set body with `JSON.stringify(data)` and `Content-Type` to `application/json`
+* `xheader` - provide a model instance here to receive the parsed x-headers from the response
 
 Standard fetch options are:
 
@@ -39,7 +40,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
 
 * `method` - defaults to 'GET'
 * `headers` - a dictionary of http headers to use
-* `body`
+* `body` - the body of the request
 * `mode` - defaults to 'same-origin'
 * `credentials` - defaults to 'same-origin'
 * `cache` - defaults to 'no-cache'
@@ -50,6 +51,7 @@ Additional options with defaults provided by `config.syncConfig` are:
 * `syncCamelCase` - converts responses to camelCase keys before parsing. defaults to true
 * `saveUnderscore` - defaults to true
 * `queryUnderscore` - defaults to true
+* `saveEncoding` - one of the following strings `json`, `form`, or `form-json`, defaults to `json`
 * `csrfCookieName` - defaults to 'csrftoken'
 * `csrfHeaderName` - defaults to 'X-CSRFToken'
 

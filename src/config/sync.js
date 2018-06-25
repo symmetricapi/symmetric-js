@@ -19,6 +19,7 @@ export const syncConfig = {
   syncCamelCase: true,
   saveUnderscore: true,
   queryUnderscore: true,
+  saveEncoding: 'json',
   csrfCookieName: 'csrftoken',
   csrfHeaderName: 'X-CSRFToken',
 };
@@ -32,6 +33,7 @@ export function sync(options) {
     syncCamelCase = syncConfig.syncCamelCase,
     saveUnderscore = syncConfig.saveUnderscore,
     queryUnderscore = syncConfig.queryUnderscore,
+    saveEncoding = syncConfig.saveEncoding,
     csrfCookieName = syncConfig.csrfCookieName,
     csrfHeaderName = syncConfig.csrfHeaderName,
     xheaders,
@@ -50,10 +52,28 @@ export function sync(options) {
       if (match) [, headers[csrfHeaderName]] = match;
     }
   }
-  // If body is given as data convert it to JSON and force the Content-Type header
+  // If body is given as data encode it as set in saveEncoding
   if (options.data) {
-    headers['Content-Type'] = 'application/json';
-    body = JSON.stringify(options.data, (saveUnderscore ? underscoreReplacer : null));
+    const replacer = (saveUnderscore ? underscoreReplacer : null);
+    let contentType;
+    if (saveEncoding === 'form' || saveEncoding === 'form-json') {
+      const formJson = (saveEncoding === 'form-json');
+      let data = options.data.toJSON();
+      if (saveUnderscore) {
+        data = underscoreObject(data);
+      }
+      contentType = 'application/x-www-form-urlencoded';
+      body = new FormData();
+      Object.keys(data).forEach((key) => {
+        body.set(key, formJson ? JSON.stringify(data[key], replacer) : data[key]);
+      });
+    } else {
+      contentType = 'application/json';
+      body = JSON.stringify(options.data, replacer);
+    }
+    if (!headers['content-type']) {
+      headers['content-type'] = contentType;
+    }
   }
   // If cancelable object is set then create an AbortController if possible
   if (cancelable && AbortController) {
@@ -61,13 +81,17 @@ export function sync(options) {
     ({ signal } = controller);
     cancelable.addObserver('cancel', controller.abort);
   }
-  return fetch(url, extendObject({
+  // Prepare the fetch options
+  const init = extendObject({
     method: 'GET',
     mode: 'same-origin',
     credentials: 'same-origin',
     cache: 'no-cache',
     redirect: 'follow',
-  }, options, { headers, body, signal }))
+    signal,
+  }, options, { url, headers, body });
+
+  return fetch(url, init)
     .then((response) => {
       // Detect if there is no AbortController, but the fetch was canceled anyways
       if (cancelable && cancelable.isCanceled) {
@@ -78,7 +102,7 @@ export function sync(options) {
       // Save all X-Headers to the xheaders model
       if (xheaders) {
         response.headers.forEach((value, key) => {
-          if (key[0] === 'X' && key[1] === '-') {
+          if (key[1] === '-' && key[0].toLowerCase() === 'x') {
             const underscoreKey = key.substr(2).replace(/-/g, '_');
             xheaders.set(syncCamelCase ? toCamelCase(underscoreKey) : underscoreKey, value);
           }
