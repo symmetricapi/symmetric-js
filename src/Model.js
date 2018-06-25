@@ -392,11 +392,13 @@ class Model extends Observable {
 
   /**
    * Create a new model and fetch it.
-   * @param {Object} options - The fetch options, be sure to include a url here
+   * @param {string} url - the url to fetch
+   * @param {Object} [options] - options to pass to the sync function
    * @returns A Promise that will later resolve to the new model
    */
-  static fetch(options) {
+  static fetch(url, options = {}) {
     const model = new Model();
+    model.url = () => url;
     return model.fetch(options);
   }
 }

@@ -294,11 +294,13 @@ class Collection extends Observable {
 
   /**
    * Create a new collection and fetch it.
-   * @param {Object} options - The fetch options, be sure to include a url here
+   * @param {string} url - the url to fetch
+   * @param {Object} [options] - options to pass to the sync function
    * @returns A Promise that will later resolve to the new collection
    */
-  static fetch(options) {
+  static fetch(url, options) {
     const collection = new Collection();
+    collection.url = () => url;
     return collection.fetch(options);
   }
 }
