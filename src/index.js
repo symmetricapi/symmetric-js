@@ -1,4 +1,5 @@
 import config from './config';
+import Auth from './Auth';
 import Cancelable from './Cancelable';
 import CancelError from './CancelError';
 import Collection from './Collection';
@@ -10,6 +11,7 @@ import validate from './validate';
 
 export default {
   config,
+  Auth,
   Cancelable,
   CancelError,
   Collection,

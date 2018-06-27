@@ -26,6 +26,7 @@ export function sync(options) {
     saveEncoding = syncConfig.saveEncoding,
     csrfCookieName = syncConfig.csrfCookieName,
     csrfHeaderName = syncConfig.csrfHeaderName,
+    auth,
     xheaders,
     cancelable,
   } = options;
@@ -71,7 +72,7 @@ export function sync(options) {
     ({ signal } = controller);
     cancelable.addObserver('cancel', controller.abort);
   }
-  // Prepare the fetch options
+  // Prepare the fetch init options and authorization
   const init = extendObject({
     method: 'GET',
     mode: 'same-origin',
@@ -80,8 +81,11 @@ export function sync(options) {
     redirect: 'follow',
     signal,
   }, options, { url, headers, body });
+  if (auth) {
+    auth.prepare(init, { saveEncoding, saveUnderscore, queryUnderscore });
+  }
 
-  return fetch(url, init)
+  return fetch(init.url, init)
     .then((response) => {
       // Detect if there is no AbortController, but the fetch was canceled anyways
       if (cancelable && cancelable.isCanceled) {

@@ -33,6 +33,7 @@ Basic options are:
 * `params` - will be added to url as query string args
 * `data` - will set body with `JSON.stringify(data)` and `Content-Type` to `application/json`
 * `xheader` - provide a model instance here to receive the parsed x-headers from the response
+* `auth` - any authorization object that implements a `prepare(request, opts)` function
 
 Standard fetch options are:
 
