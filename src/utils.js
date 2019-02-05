@@ -132,6 +132,23 @@ export function isSameOrigin(url) {
   return url.substr(0, origin.length) === origin;
 }
 
+export function parseLinks(value) {
+  // https://tools.ietf.org/html/rfc5988#page-4
+  const links = [];
+  const linkRe = /\s*<(.*?)>\s*;\s*([^<]*)\s*/g;
+  let match = linkRe.exec(value);
+  while (match) {
+    const params = {};
+    match[2].split(';').forEach((pair) => {
+      const [k, v] = pair.trim().split('=');
+      params[k] = v.substr(1, v.length - 2);
+    });
+    links.push(extendObject({ url: match[1] }, params));
+    match = linkRe.exec(value);
+  }
+  return links;
+}
+
 /** Encode a value using config.encoders. */
 export function encode(value, type) {
   if (value === null || value === undefined) return '';

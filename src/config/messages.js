@@ -1,4 +1,5 @@
-export default function formatErrorMessage({ instructions, rule, title = 'This field' }, error, value) { // eslint-disable-line no-unused-vars
+// eslint-disable-next-line no-unused-vars
+export default function formatErrorMessage({ instructions, rule, title = 'This field' }, error, value) {
   if (error === 'format' && instructions) return instructions;
   const len = rule.type === 'string' ? 'The length of ' : '';
   const chars = rule.type === 'string' ? ' characters' : '';

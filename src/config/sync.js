@@ -1,5 +1,14 @@
 import CancelError from '../CancelError';
-import { getRoot, extendObject, prepareUrl, isSameOrigin, toCamelCase, camelCaseObject, underscoreObject } from '../utils';
+import {
+  getRoot,
+  extendObject,
+  prepareUrl,
+  isSameOrigin,
+  parseLinks,
+  toCamelCase,
+  camelCaseObject,
+  underscoreObject,
+} from '../utils';
 
 const fetch = getRoot('fetch');
 const AbortController = getRoot('AbortController');
@@ -12,6 +21,8 @@ export const syncConfig = {
   saveEncoding: 'json',
   csrfCookieName: 'csrftoken',
   csrfHeaderName: 'X-CSRFToken',
+  auth: null,
+  unwrap: null,
 };
 
 /**
@@ -26,8 +37,9 @@ export function sync(options) {
     saveEncoding = syncConfig.saveEncoding,
     csrfCookieName = syncConfig.csrfCookieName,
     csrfHeaderName = syncConfig.csrfHeaderName,
-    auth,
-    xheaders,
+    auth = syncConfig.auth,
+    unwrap = syncConfig.unwrap,
+    context,
     cancelable,
   } = options;
   const url = prepareUrl(options.url, options.params, queryUnderscore);
@@ -93,12 +105,14 @@ export function sync(options) {
       } else if (!response.ok) {
         return Promise.reject(response);
       }
-      // Save all X-Headers to the xheaders model
-      if (xheaders) {
+      // Save all Link and X-Headers to the context model
+      if (context) {
         response.headers.forEach((value, key) => {
-          if (key[1] === '-' && key[0].toLowerCase() === 'x') {
+          if (key === 'Link') {
+            context.set('links', parseLinks(value));
+          } else if (key[1] === '-' && key[0].toLowerCase() === 'x') {
             const underscoreKey = key.substr(2).replace(/-/g, '_');
-            xheaders.set(syncCamelCase ? toCamelCase(underscoreKey) : underscoreKey, value);
+            context.set(syncCamelCase ? toCamelCase(underscoreKey) : underscoreKey, value);
           }
         });
       }
@@ -109,6 +123,7 @@ export function sync(options) {
       return response.text();
     })
     .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
+    .then(data => (unwrap ? unwrap(data, context) : data))
     .catch((err) => {
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();

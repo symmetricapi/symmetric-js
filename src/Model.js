@@ -253,7 +253,7 @@ class Model extends Observable {
    * @param {Object} options - options passed to the sync function
    * @param {string} operation - fetch, save, or destroy
    */
-  url(options, operation) { // eslint-disable-line no-unused-vars
+  url(options, operation) {
     if (options.url) return options.url;
     if (this.collection) {
       const url = this.collection.url(options, operation);

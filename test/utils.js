@@ -9,6 +9,7 @@ const {
   camelCaseObject,
   underscoreObject,
   generateCid,
+  parseLinks,
 } = require('../src/utils');
 
 function TestObj() {}
@@ -34,6 +35,15 @@ const underscored = {
     key_test: '',
   },
 };
+
+const links = [{
+  url: 'https://api.github.com/user/repos?page=3&per_page=100',
+  rel: 'next',
+  title: 'Next Page"',
+}, {
+  url: 'https://api.github.com/user/repos?page=50&per_page=100',
+  rel: 'last',
+}];
 
 assert(getRoot() === global);
 
@@ -71,5 +81,7 @@ assert.deepStrictEqual(underscored, underscoreObject(camelCased, true));
 
 const cid = generateCid();
 assert(cid !== generateCid());
+
+assert.deepStrictEqual(links, parseLinks('<https://api.github.com/user/repos?page=3&per_page=100>; rel="next"; title="Next Page", <https://api.github.com/user/repos?page=50&per_page=100>; rel="last"'));
 
 console.log('Utils tests passed!');

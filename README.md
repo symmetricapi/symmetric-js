@@ -32,8 +32,9 @@ Basic options are:
 * `url` - required url to fetch
 * `params` - will be added to url as query string args
 * `data` - will set body with `JSON.stringify(data)` and `Content-Type` to `application/json`
-* `xheader` - provide a model instance here to receive the parsed x-headers from the response
 * `auth` - any authorization object that implements a `prepare(request, opts)` function
+* `context` - provide a model instance here to receive the Link and X-Headers from the response as well as any meta data from unwrapping
+* `unwrap` - function to unwrap and enveloped response and return the extracted data `unwrap(data, context) => unwrapped`
 
 Standard fetch options are:
 
@@ -55,6 +56,8 @@ Additional options with defaults provided by `config.syncConfig` are:
 * `saveEncoding` - one of the following strings `json`, `form`, or `form-json`, defaults to `json`
 * `csrfCookieName` - defaults to 'csrftoken'
 * `csrfHeaderName` - defaults to 'X-CSRFToken'
+* `auth` - an optional single auth object to use for all sync operations, defaults to null
+* `unwrap` - an optional function to user for unwrapping responses from the server, defaults to null
 
 Subclassing
 -------------------------------

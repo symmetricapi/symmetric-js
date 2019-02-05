@@ -4,7 +4,6 @@ import formatErrorMessage from './messages';
 import { sync, syncConfig } from './sync';
 
 export default {
-  Component: Object,
   encoders,
   decoders,
   inputEncodings,
