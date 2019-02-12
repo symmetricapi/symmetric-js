@@ -10,7 +10,9 @@ class Observable {
     this.observers = {};
   }
 
-  toJSON() { return {}; } // eslint-disable-line
+  toJSON() {
+    return {};
+  }
 
   /**
    * Call each observer listening to the action and action:path combination.
@@ -20,14 +22,14 @@ class Observable {
   invokeObservers(action, path) {
     const observers = this.observers[action];
     if (observers) {
-      observers.forEach((observer) => {
+      observers.forEach(observer => {
         observer(this, action, path);
       });
     }
     if (path) {
       const pathObservers = this.observers[`${action}:${path}`];
       if (pathObservers) {
-        pathObservers.forEach((observer) => {
+        pathObservers.forEach(observer => {
           observer(this, action, path);
         });
       }

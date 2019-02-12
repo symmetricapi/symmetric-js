@@ -3,20 +3,14 @@ import Model from './Model';
 
 export default function validate(rule, value) {
   if (!rule) return true;
-  const {
-    required,
-    type,
-    format,
-    equals,
-    min,
-    max,
-  } = rule;
+  const { required, type, format, equals, min, max } = rule;
   if (value === null || (value === '' && type === 'string')) {
     return required ? 'required' : true;
   }
-  if ((type === 'string' && typeof value !== 'string') ||
+  if (
+    (type === 'string' && typeof value !== 'string') ||
     (type === 'date' && !(value instanceof Date)) ||
-    (type === 'int' && !(+value === value && (value % 1) === 0)) ||
+    (type === 'int' && !(+value === value && value % 1 === 0)) ||
     (type === 'float' && typeof value !== 'number') ||
     (type === 'bool' && typeof value !== 'boolean') ||
     (type === 'array' && !Array.isArray(value)) ||

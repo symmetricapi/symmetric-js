@@ -4,17 +4,16 @@ import config from './config';
 /** Returns the root window or global object. */
 export function getRoot(key) {
   // self will support both in-browser window and WebWorker
-  const root = (
+  const root =
     (typeof self === 'object' && self.self === self && self) || // eslint-disable-line
-    (typeof global === 'object' && global.global === global && global)
-  );
+    (typeof global === 'object' && global.global === global && global);
   return key ? root[key] : root;
 }
 
 /** Returns true if the given object is an instance of Object and not of a subclass or other type */
 export function isPlainObject(obj) {
   // First check of just obj is needed because typeof null is object
-  return (obj && typeof obj === 'object' && Object.getPrototypeOf(obj) === Object.prototype);
+  return obj && typeof obj === 'object' && Object.getPrototypeOf(obj) === Object.prototype;
 }
 
 /**
@@ -53,8 +52,10 @@ export function extendObject(obj, ...others) {
  * is NaN But with the string: '0' < 'a' is true and '0' > 'a' is false
  */
 export function getAttr(obj, key, def) {
-  const value = key.split('.').reduce((o, i) => ((o && o.get && o.get(i)) || (o && o[i]) || '0'), obj);
-  return (value === '0' && def) ? def : value;
+  const value = key
+    .split('.')
+    .reduce((o, i) => (o && o.get && o.get(i)) || (o && o[i]) || '0', obj);
+  return value === '0' && def ? def : value;
 }
 
 export function toCamelCase(str) {
@@ -93,7 +94,8 @@ export function camelCaseObject(obj, deep) {
   const converted = {};
   for (const key in obj) {
     const value = obj[key];
-    converted[toCamelCase(key)] = (deep && typeof value === 'object' ? camelCaseObject(value, deep) : value);
+    converted[toCamelCase(key)] =
+      deep && typeof value === 'object' ? camelCaseObject(value, deep) : value;
   }
   return converted;
 }
@@ -108,7 +110,8 @@ export function underscoreObject(obj, deep) {
   const converted = {};
   for (const key in obj) {
     const value = obj[key];
-    converted[toUnderscore(key)] = (deep && typeof value === 'object' ? underscoreObject(value, deep) : value);
+    converted[toUnderscore(key)] =
+      deep && typeof value === 'object' ? underscoreObject(value, deep) : value;
   }
   return converted;
 }
@@ -117,7 +120,9 @@ export function underscoreObject(obj, deep) {
 export function prepareUrl(url, params, underscoreParams) {
   if (!params) return url;
   const args = underscoreParams ? underscoreObject(params) : params;
-  const encoded = Object.keys(args).map(key => `${key}=${encodeURIComponent(args[key])}`).join('&');
+  const encoded = Object.keys(args)
+    .map(key => `${key}=${encodeURIComponent(args[key])}`)
+    .join('&');
   return url.indexOf('?') === -1 ? `${url}?${encoded}` : `${url}&${encoded}`;
 }
 
@@ -139,7 +144,7 @@ export function parseLinks(value) {
   let match = linkRe.exec(value);
   while (match) {
     const params = {};
-    match[2].split(';').forEach((pair) => {
+    match[2].split(';').forEach(pair => {
       const [k, v] = pair.trim().split('=');
       params[k] = v.substr(1, v.length - 2);
     });

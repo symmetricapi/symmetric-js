@@ -22,7 +22,7 @@ class Model extends Observable {
     extendObject(
       this.attributes,
       this.defaults(),
-      (data instanceof Model ? data.attributes : this.parse(data)),
+      data instanceof Model ? data.attributes : this.parse(data),
     );
   }
 
@@ -30,7 +30,7 @@ class Model extends Observable {
   toJSON() {
     const data = copyObject(this.attributes);
     // Encode anything that should be a string
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       const value = data[key];
       if (value && typeof value === 'object') {
         const field = this.field(key);
@@ -76,7 +76,7 @@ class Model extends Observable {
 
   /** @member {Boolean} */
   get isDeleted() {
-    return !(this.idAttribute in this.attributes) && (this.idAttribute in this.dirtyAttributes);
+    return !(this.idAttribute in this.attributes) && this.idAttribute in this.dirtyAttributes;
   }
 
   /** @member {Boolean} */
@@ -102,12 +102,24 @@ class Model extends Observable {
     const field = this.field(key);
     return field && field[prop];
   }
-  choices(key) { return this.fieldProp(key, 'choices'); }
-  encoding(key) { return this.fieldProp(key, 'encoding'); }
-  rule(key) { return this.fieldProp(key, 'rule'); }
-  title(key) { return this.fieldProp(key, 'title'); }
-  subtitle(key) { return this.fieldProp(key, 'subtitle'); }
-  instructions(key) { return this.fieldProp(key, 'instructions'); }
+  choices(key) {
+    return this.fieldProp(key, 'choices');
+  }
+  encoding(key) {
+    return this.fieldProp(key, 'encoding');
+  }
+  rule(key) {
+    return this.fieldProp(key, 'rule');
+  }
+  title(key) {
+    return this.fieldProp(key, 'title');
+  }
+  subtitle(key) {
+    return this.fieldProp(key, 'subtitle');
+  }
+  instructions(key) {
+    return this.fieldProp(key, 'instructions');
+  }
 
   /**
    * Returns true if the attribute key can be found in this model.
@@ -141,7 +153,7 @@ class Model extends Observable {
   set(key, value) {
     if (this.isDeleted) throw new Error('Attempting to modify model after it has been deleted.');
     if (isPlainObject(key)) {
-      Object.keys(key).forEach((k) => {
+      Object.keys(key).forEach(k => {
         this.set(k, key[k]);
       });
       return this;
@@ -232,7 +244,7 @@ class Model extends Observable {
    */
   validate(errors) {
     this.errors = extendObject({}, errors);
-    Object.keys(this.attributes).forEach((key) => {
+    Object.keys(this.attributes).forEach(key => {
       let rule = this.rule(key);
       if (rule) {
         if ((rule.equals === null || rule.equals === undefined) && this.choices(key)) {
@@ -284,7 +296,7 @@ class Model extends Observable {
   parse(data) {
     if (!data) return data;
     // Decode anything that shouldn't be a string
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       if (typeof data[key] === 'string') {
         const field = this.field(key);
         if (field && field.encoding && !(field.encoding in config.inputEncodings)) {
@@ -301,18 +313,18 @@ class Model extends Observable {
     return new Promise((resolve, reject) => {
       this.sync(syncOptions)
         .then(this.parse.bind(this))
-        .then((data) => {
+        .then(data => {
           this.set(data);
           // Remove all keys of the request data from dirtyAttributes
           if (syncOptions.data === this) {
             this.dirtyAttributes = {};
           } else if (isPlainObject(syncOptions.data)) {
-            Object.keys(syncOptions.data).forEach((key) => {
+            Object.keys(syncOptions.data).forEach(key => {
               delete this.dirtyAttributes[key];
             });
           }
           // Remove all keys of returned results from dirtyAttributes
-          Object.keys(data).forEach((key) => {
+          Object.keys(data).forEach(key => {
             delete this.dirtyAttributes[key];
           });
           // Clear the validation timeout
@@ -349,7 +361,7 @@ class Model extends Observable {
       syncOptions.data = this;
       if (syncOptions.method === 'PATCH') {
         syncOptions.data = {};
-        Object.keys(this.dirtyAttributes).forEach((key) => {
+        Object.keys(this.dirtyAttributes).forEach(key => {
           syncOptions.data[key] = this.attributes[key];
         });
       }
@@ -369,16 +381,18 @@ class Model extends Observable {
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable;
     return new Promise((resolve, reject) => {
-      this.sync(syncOptions).then(() => {
-        // Set as deleted by unsetting the id
-        this.unset(this.idAttribute);
-        // Remove the collection if one is set
-        if (this.collection) this.collection.remove(this);
-        // Clear the validation timeout
-        clearTimeout(this._vtid);
-        this.invokeObservers('sync', 'destroy');
-        resolve(this);
-      }).catch(reject);
+      this.sync(syncOptions)
+        .then(() => {
+          // Set as deleted by unsetting the id
+          this.unset(this.idAttribute);
+          // Remove the collection if one is set
+          if (this.collection) this.collection.remove(this);
+          // Clear the validation timeout
+          clearTimeout(this._vtid);
+          this.invokeObservers('sync', 'destroy');
+          resolve(this);
+        })
+        .catch(reject);
     });
   }
 

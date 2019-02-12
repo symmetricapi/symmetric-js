@@ -51,23 +51,23 @@ export function sync(options) {
   if (csrfHeaderName && isSameOrigin(options.url)) {
     const document = getRoot('document');
     if (document && document.cookie) {
-      const match = (new RegExp(`${csrfCookieName}=([^;\\s]*)(?:[;\\s]|$)`)).exec(document.cookie);
+      const match = new RegExp(`${csrfCookieName}=([^;\\s]*)(?:[;\\s]|$)`).exec(document.cookie);
       if (match) [, headers[csrfHeaderName]] = match;
     }
   }
   // If body is given as data encode it as set in saveEncoding
   if (options.data) {
-    const replacer = (saveUnderscore ? (k, v) => underscoreObject(v) : null);
+    const replacer = saveUnderscore ? (k, v) => underscoreObject(v) : null;
     let contentType;
     if (saveEncoding === 'form' || saveEncoding === 'form-json') {
-      const formJson = (saveEncoding === 'form-json');
+      const formJson = saveEncoding === 'form-json';
       let data = options.data.toJSON();
       if (saveUnderscore) {
         data = underscoreObject(data);
       }
       contentType = 'application/x-www-form-urlencoded';
       body = new FormData();
-      Object.keys(data).forEach((key) => {
+      Object.keys(data).forEach(key => {
         body.set(key, formJson ? JSON.stringify(data[key], replacer) : data[key]);
       });
     } else {
@@ -85,20 +85,24 @@ export function sync(options) {
     cancelable.addObserver('cancel', controller.abort);
   }
   // Prepare the fetch init options and authorization
-  const init = extendObject({
-    method: 'GET',
-    mode: 'same-origin',
-    credentials: 'same-origin',
-    cache: 'no-cache',
-    redirect: 'follow',
-    signal,
-  }, options, { url, headers, body });
+  const init = extendObject(
+    {
+      method: 'GET',
+      mode: 'same-origin',
+      credentials: 'same-origin',
+      cache: 'no-cache',
+      redirect: 'follow',
+      signal,
+    },
+    options,
+    { url, headers, body },
+  );
   if (auth) {
     auth.prepare(init, { saveEncoding, saveUnderscore, queryUnderscore });
   }
 
   return fetch(init.url, init)
-    .then((response) => {
+    .then(response => {
       // Detect if there is no AbortController, but the fetch was canceled anyways
       if (cancelable && cancelable.isCanceled) {
         return Promise.reject(new CancelError());
@@ -124,7 +128,7 @@ export function sync(options) {
     })
     .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
     .then(data => (unwrap ? unwrap(data, context) : data))
-    .catch((err) => {
+    .catch(err => {
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();
       }

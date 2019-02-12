@@ -9,9 +9,12 @@ if (root.Buffer) {
 
 function isRevivable(value) {
   return (
-    value && typeof value === 'object' &&
-    value.type && value.data &&
-    Object.keys(value).length === 2 && value.type in clsMap
+    value &&
+    typeof value === 'object' &&
+    value.type &&
+    value.data &&
+    Object.keys(value).length === 2 &&
+    value.type in clsMap
   );
 }
 
@@ -25,8 +28,7 @@ function reviver(key, value) {
 
 function isReplaceable(value) {
   return (
-    value && typeof value === 'object' &&
-    value.constructor && value.constructor.name in clsMap
+    value && typeof value === 'object' && value.constructor && value.constructor.name in clsMap
   );
 }
 
@@ -48,7 +50,7 @@ function replace(rawData) {
       return data.map(item => replace(item));
     }
     const newData = {};
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       newData[key] = replace(data[key]);
     });
     return newData;

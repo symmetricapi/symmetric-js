@@ -56,7 +56,9 @@ class Collection extends Observable {
       // Add each item individually but wait until the end to autosort
       const { comparator } = this;
       this.comparator = null;
-      (unshift ? items.reverse() : items).forEach((item) => { this.add(item, unshift); });
+      (unshift ? items.reverse() : items).forEach(item => {
+        this.add(item, unshift);
+      });
       this.comparator = comparator;
       this.sort(this.comparator);
       return this;
@@ -92,7 +94,9 @@ class Collection extends Observable {
       const { comparator } = this;
       const removed = [];
       this.comparator = null;
-      items.forEach((item) => { removed.push(this.remove(item)); });
+      items.forEach(item => {
+        removed.push(this.remove(item));
+      });
       this.comparator = comparator;
       this.sort(this.comparator);
       return removed;
@@ -116,7 +120,9 @@ class Collection extends Observable {
   /** Remove all items and only trigger a single reset event. */
   reset() {
     // eslint-disable-next-line no-param-reassign
-    this.items.forEach((item) => { item.collection = null; });
+    this.items.forEach(item => {
+      item.collection = null;
+    });
     this.items = [];
     this.invokeObservers('reset');
   }
@@ -130,7 +136,7 @@ class Collection extends Observable {
     const clone = this.clone();
     if (typeof callback !== 'function') {
       const keys = Object.keys(args);
-      callback = (item) => {
+      callback = item => {
         // Allow each arg to be a value or regex
         for (let arg, value, i = 0; i < keys.length; i += 1) {
           arg = args[i];
@@ -187,7 +193,8 @@ class Collection extends Observable {
       fun = (a, b) => {
         const valueA = getAttr(a, key);
         const valueB = getAttr(b, key);
-        if (valueA < valueB) return -1; else if (valueB < valueA) return 1;
+        if (valueA < valueB) return -1;
+        else if (valueB < valueA) return 1;
         return 0;
       };
     }
@@ -203,7 +210,7 @@ class Collection extends Observable {
    * @param {Object} item - raw attribute data yet to be put into a model
    * @returns {class}
    */
-  model(item) { // eslint-disable-line no-unused-vars
+  model(item) {
     return Model;
   }
 
@@ -212,7 +219,7 @@ class Collection extends Observable {
    * @param {Object} options - options passed to the sync function
    * @param {string} operation - fetch, save, or destroy
    */
-  url(options, operation) { // eslint-disable-line no-unused-vars
+  url(options, operation) {
     if (options.url) return options.url;
     return '';
   }
@@ -236,7 +243,7 @@ class Collection extends Observable {
   parse(data) {
     if (!Array.isArray(data)) return data;
     // Convert each item to a model if not already
-    return data.map((item) => {
+    return data.map(item => {
       if (item instanceof Model) return item;
       const ModelCls = this.model(item);
       return new ModelCls(item);
@@ -256,7 +263,7 @@ class Collection extends Observable {
     return new Promise((resolve, reject) => {
       this.sync(syncOptions)
         .then(this.parse.bind(this))
-        .then((data) => {
+        .then(data => {
           this.add(data);
           this.invokeObservers('sync', 'fetch');
           resolve(this);
@@ -276,7 +283,7 @@ class Collection extends Observable {
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable;
     const dirtyCollection = this.filter(item => !item.isDirty);
-    const cb = (model) => {
+    const cb = model => {
       const item = dirtyCollection.remove(model || dirtyCollection.at(0));
       if (!item) return this;
       return item.save(syncOptions).then(cb);

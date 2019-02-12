@@ -1,2 +1,2 @@
-class CancelError { }
+class CancelError {}
 export default CancelError;

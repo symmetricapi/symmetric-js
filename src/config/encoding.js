@@ -1,4 +1,3 @@
-
 /**
  * Set of encoding functions used for translating model data to user inputs or JSON.
  * date: yyyy-MM-dd

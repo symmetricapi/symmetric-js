@@ -5,10 +5,16 @@
     "node": true
   },
   "rules": {
-    "class-methods-use-this": ["error", { "exceptMethods": ["defaults", "field", "url", "sync", "parse", "model"] }],
+    "class-methods-use-this": [
+      "error",
+      { "exceptMethods": ["defaults", "field", "url", "sync", "parse", "model", "toJSON"] }
+    ],
     "no-bitwise": 0,
     "no-underscore-dangle": 0,
-    "no-unused-vars": ["error", { "varsIgnorePattern": "^h$" }],
+    "no-unused-vars": [
+      "error",
+      { "varsIgnorePattern": "^h$", "argsIgnorePattern": "^item|operation$" }
+    ],
 
     "jsx-a11y/anchor-has-content": 1,
     "jsx-a11y/href-no-hash": 0,

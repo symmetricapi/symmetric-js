@@ -5,5 +5,5 @@ export default {
   slug: /^[a-z0-9-]+$/i,
   username: /^[a-z0-9_@\-+.]{3,150}$/i,
   color: /^#?([a-f0-9]{6}|[a-f0-9]{3})$/i,
-  phone: value => ((value.split('x')[0].match(/\d/g) || []).length >= 10),
+  phone: value => (value.split('x')[0].match(/\d/g) || []).length >= 10,
 };

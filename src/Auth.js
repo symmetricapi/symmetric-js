@@ -22,11 +22,7 @@ class Auth extends Model {
    */
   prepare(request, options) {
     const authType = this.get('authType');
-    const {
-      saveEncoding,
-      saveUnderscore,
-      queryUnderscore,
-    } = options;
+    const { saveEncoding, saveUnderscore, queryUnderscore } = options;
 
     if (authType === 'apikey') {
       request.url = prepareUrl(request.url, { apikey: this.get('apikey') }, queryUnderscore);
@@ -34,15 +30,24 @@ class Auth extends Model {
       request.headers.authorization = `Bearer ${this.get('accessToken')}`;
     } else if (authType === 'token') {
       if (request.method === 'GET' || request.method === 'HEAD' || request.method === 'DELETE') {
-        request.url = prepareUrl(request.url, { accessToken: this.get('accessToken') }, queryUnderscore);
+        // Insert the token into the query string
+        request.url = prepareUrl(
+          request.url,
+          { accessToken: this.get('accessToken') },
+          queryUnderscore,
+        );
       } else {
-        const replacer = (saveUnderscore ? (k, v) => underscoreObject(v) : null);
+        const replacer = saveUnderscore ? (k, v) => underscoreObject(v) : null;
         const jsonData = JSON.stringify({ accessToken: this.get('accessToken') }, replacer);
         if (saveEncoding === 'json') {
           if (!request.body) {
+            // Body is missing so just set to JSON with accessToken
             request.body = jsonData;
           } else {
-            request.body = `${request.body.substr(0, request.body.length - 1)},${jsonData.substr(1)}`;
+            // Insert the accessToken as the last key of the existing JSON object
+            const bodyPrefix = request.body.substr(0, request.body.length - 1);
+            const bodySuffix = jsonData.substr(1);
+            request.body = `${bodyPrefix},${bodySuffix}`;
           }
         } else if (saveEncoding === 'form' || saveEncoding === 'form-json') {
           let formToken = this.get('accessToken');

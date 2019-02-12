@@ -1,14 +1,8 @@
 const assert = require('assert');
 const Model = require('../src/Model').default;
-const {
-  register,
-  serialize,
-  deserialize,
-} = require('../src/serialization');
+const { register, serialize, deserialize } = require('../src/serialization');
 
-class MyModel extends Model {
-
-}
+class MyModel extends Model {}
 register(MyModel);
 
 class Serializable {
