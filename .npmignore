@@ -1,6 +1,7 @@
 .babelrc
 .editorconfig
 .eslintrc
+.prettierrc.json
 test/
 rollup.config.js
 todo.txt
