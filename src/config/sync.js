@@ -8,7 +8,7 @@ import {
   parseLinks,
   toCamelCase,
   camelCaseObject,
-  underscoreObject,
+  snakeCaseObject,
 } from '../utils';
 
 const fetch = getRoot('fetch');
@@ -17,8 +17,8 @@ const AbortError = getRoot('AbortError');
 
 export const syncConfig = {
   syncCamelCase: true,
-  saveUnderscore: true,
-  queryUnderscore: true,
+  saveSnakeCase: true,
+  querySnakeCase: true,
   saveEncoding: 'json',
   csrfCookieName: 'csrftoken',
   csrfHeaderName: 'X-CSRFToken',
@@ -34,8 +34,8 @@ export const syncConfig = {
 export function sync(options) {
   const {
     syncCamelCase = syncConfig.syncCamelCase,
-    saveUnderscore = syncConfig.saveUnderscore,
-    queryUnderscore = syncConfig.queryUnderscore,
+    saveSnakeCase = syncConfig.saveSnakeCase,
+    querySnakeCase = syncConfig.querySnakeCase,
     saveEncoding = syncConfig.saveEncoding,
     csrfCookieName = syncConfig.csrfCookieName,
     csrfHeaderName = syncConfig.csrfHeaderName,
@@ -46,7 +46,7 @@ export function sync(options) {
     cancelable,
   } = options;
   const SyncError = syncErrorCls;
-  const url = prepareUrl(options.url, options.params, queryUnderscore);
+  const url = prepareUrl(options.url, options.params, querySnakeCase);
   const headers = extendObject({}, options.headers);
   let { body } = options;
   let signal = null;
@@ -61,13 +61,13 @@ export function sync(options) {
   }
   // If body is given as data encode it as set in saveEncoding
   if (options.data) {
-    const replacer = saveUnderscore ? (k, v) => underscoreObject(v) : null;
+    const replacer = saveSnakeCase ? (k, v) => snakeCaseObject(v) : null;
     let contentType;
     if (saveEncoding === 'form' || saveEncoding === 'form-json') {
       const formJson = saveEncoding === 'form-json';
       let data = options.data.toJSON();
-      if (saveUnderscore) {
-        data = underscoreObject(data);
+      if (saveSnakeCase) {
+        data = snakeCaseObject(data);
       }
       contentType = 'application/x-www-form-urlencoded';
       body = new FormData();
@@ -102,7 +102,7 @@ export function sync(options) {
     { url, headers, body },
   );
   if (auth) {
-    auth.prepare(init, { saveEncoding, saveUnderscore, queryUnderscore });
+    auth.prepare(init, { saveEncoding, saveSnakeCase, querySnakeCase });
   }
 
   return fetch(init.url, init)
@@ -119,8 +119,8 @@ export function sync(options) {
           if (key === 'Link') {
             meta.set('links', parseLinks(value));
           } else if (key[1] === '-' && key[0].toLowerCase() === 'x') {
-            const underscoreKey = key.substr(2).replace(/-/g, '_');
-            meta.set(syncCamelCase ? toCamelCase(underscoreKey) : underscoreKey, value);
+            const snakeCaseKey = key.substr(2).replace(/-/g, '_');
+            meta.set(syncCamelCase ? toCamelCase(snakeCaseKey) : snakeCaseKey, value);
           }
         });
       }

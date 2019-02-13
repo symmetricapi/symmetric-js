@@ -16,6 +16,7 @@
       { "varsIgnorePattern": "^h$", "argsIgnorePattern": "^item|operation$" }
     ],
     "arrow-parens": ["error", "as-needed"],
+    "function-paren-newline": ["error", "consistent"],
     "no-param-reassign": ["error", { "props": false }],
 
     "jsx-a11y/anchor-has-content": 1,

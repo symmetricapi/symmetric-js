@@ -1,6 +1,6 @@
 /* eslint no-param-reassign: 0 */
 import Model from './Model';
-import { prepareUrl, underscoreObject } from './utils';
+import { prepareUrl, snakeCaseObject } from './utils';
 
 /**
  * A basic Auth model that implements apikey and OAuth2 request preparing.
@@ -22,10 +22,10 @@ class Auth extends Model {
    */
   prepare(request, options) {
     const authType = this.get('authType');
-    const { saveEncoding, saveUnderscore, queryUnderscore } = options;
+    const { saveEncoding, saveSnakeCase, querySnakeCase } = options;
 
     if (authType === 'apikey') {
-      request.url = prepareUrl(request.url, { apikey: this.get('apikey') }, queryUnderscore);
+      request.url = prepareUrl(request.url, { apikey: this.get('apikey') }, querySnakeCase);
     } else if (authType === 'bearer') {
       request.headers.authorization = `Bearer ${this.get('accessToken')}`;
     } else if (authType === 'token') {
@@ -34,10 +34,10 @@ class Auth extends Model {
         request.url = prepareUrl(
           request.url,
           { accessToken: this.get('accessToken') },
-          queryUnderscore,
+          querySnakeCase,
         );
       } else {
-        const replacer = saveUnderscore ? (k, v) => underscoreObject(v) : null;
+        const replacer = saveSnakeCase ? (k, v) => snakeCaseObject(v) : null;
         const jsonData = JSON.stringify({ accessToken: this.get('accessToken') }, replacer);
         if (saveEncoding === 'json') {
           if (!request.body) {
@@ -55,7 +55,7 @@ class Auth extends Model {
             formToken = JSON.stringify(formToken);
           }
           request.body = request.body || new FormData();
-          request.body.set(saveUnderscore ? 'access_token' : 'accessToken', formToken);
+          request.body.set(saveSnakeCase ? 'access_token' : 'accessToken', formToken);
         }
       }
     }

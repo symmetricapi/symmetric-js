@@ -46,8 +46,8 @@ https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
 Additional options with defaults provided by `config.syncConfig` are:
 
 - `syncCamelCase` - converts responses to camelCase keys before parsing. defaults to true
-- `saveUnderscore` - defaults to true
-- `queryUnderscore` - defaults to true
+- `saveSnakeCase` - defaults to true
+- `querySnakeCase` - defaults to true
 - `saveEncoding` - one of the following strings `json`, `form`, or `form-json`, defaults to `json`
 - `csrfCookieName` - defaults to 'csrftoken'
 - `csrfHeaderName` - defaults to 'X-CSRFToken'

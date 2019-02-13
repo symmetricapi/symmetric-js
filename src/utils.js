@@ -70,7 +70,7 @@ export function toCamelCase(str) {
   return camelCase;
 }
 
-export function toUnderscore(str) {
+export function toSnakeCase(str) {
   const words = [];
   let wordStart = 0;
   for (let c, i = 0; i < str.length; i += 1) {
@@ -85,7 +85,7 @@ export function toUnderscore(str) {
 }
 
 /**
- * Does a conversion of underscore-based attributes to camelCase.
+ * Does a conversion of snake_case-based attributes to camelCase.
  * @param {Object} obj
  * @param {Boolean} [deep] - if true will do a deep conversion into any sub-objects
  */
@@ -101,25 +101,25 @@ export function camelCaseObject(obj, deep) {
 }
 
 /**
- * Does a conversion of camelCase-based attributes to underscore.
+ * Does a conversion of camelCase-based attributes to snake_case.
  * @param {Object} obj
  * @param {Boolean} [deep] - if true will do a deep conversion into any sub-objects
  */
-export function underscoreObject(obj, deep) {
+export function snakeCaseObject(obj, deep) {
   if (!isPlainObject(obj)) return obj;
   const converted = {};
   for (const key in obj) {
     const value = obj[key];
-    converted[toUnderscore(key)] =
-      deep && typeof value === 'object' ? underscoreObject(value, deep) : value;
+    converted[toSnakeCase(key)] =
+      deep && typeof value === 'object' ? snakeCaseObject(value, deep) : value;
   }
   return converted;
 }
 
 /** Prepare a url with an optional params dict to be added to the query string. */
-export function prepareUrl(url, params, underscoreParams) {
+export function prepareUrl(url, params, snakeCaseParams) {
   if (!params) return url;
-  const args = underscoreParams ? underscoreObject(params) : params;
+  const args = snakeCaseParams ? snakeCaseObject(params) : params;
   const encoded = Object.keys(args)
     .map(key => `${key}=${encodeURIComponent(args[key])}`)
     .join('&');
