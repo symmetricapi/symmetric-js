@@ -6,7 +6,8 @@ import validate from './validate';
 
 /**
  * Model instances manage a set of attributes exposed through get/set methods.
- * Updates observers with change:<key>, sync:fetch|save|destroy, and validate:true|false
+ * Updates observers with the following:
+ * change:<key>, request|sync|error:fetch|save|destroy, and validate:true|false
  * @param {Object|Model} [data] - Initial values to set the model's attributes
  * @class
  */
@@ -311,6 +312,7 @@ class Model extends Observable {
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable; // eslint-disable-line no-param-reassign
     return new Promise((resolve, reject) => {
+      this.invokeObservers('request', operation);
       this.sync(syncOptions)
         .then(this.parse.bind(this))
         .then(data => {
@@ -332,7 +334,10 @@ class Model extends Observable {
           this.invokeObservers('sync', operation);
           resolve(this);
         })
-        .catch(reject);
+        .catch(err => {
+          this.invokeObservers('error', operation);
+          reject(err);
+        });
     });
   }
 
@@ -381,6 +386,7 @@ class Model extends Observable {
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable;
     return new Promise((resolve, reject) => {
+      this.invokeObservers('request', 'destroy');
       this.sync(syncOptions)
         .then(() => {
           // Set as deleted by unsetting the id
@@ -392,7 +398,10 @@ class Model extends Observable {
           this.invokeObservers('sync', 'destroy');
           resolve(this);
         })
-        .catch(reject);
+        .catch(err => {
+          this.invokeObservers('error', 'destroy');
+          reject(err);
+        });
     });
   }
 

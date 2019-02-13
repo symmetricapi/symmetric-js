@@ -1,4 +1,5 @@
 import CancelError from '../CancelError';
+import * as SyncErrorCls from '../SyncError';
 import {
   getRoot,
   extendObject,
@@ -23,6 +24,7 @@ export const syncConfig = {
   csrfHeaderName: 'X-CSRFToken',
   auth: null,
   unwrap: null,
+  syncErrorCls: SyncErrorCls,
 };
 
 /**
@@ -39,9 +41,11 @@ export function sync(options) {
     csrfHeaderName = syncConfig.csrfHeaderName,
     auth = syncConfig.auth,
     unwrap = syncConfig.unwrap,
-    context,
+    syncErrorCls = syncConfig.syncErrorCls,
+    meta,
     cancelable,
   } = options;
+  const SyncError = syncErrorCls;
   const url = prepareUrl(options.url, options.params, queryUnderscore);
   const headers = extendObject({}, options.headers);
   let { body } = options;
@@ -105,18 +109,18 @@ export function sync(options) {
     .then(response => {
       // Detect if there is no AbortController, but the fetch was canceled anyways
       if (cancelable && cancelable.isCanceled) {
-        return Promise.reject(new CancelError());
+        throw new CancelError();
       } else if (!response.ok) {
-        return Promise.reject(response);
+        throw new SyncError(response);
       }
-      // Save all Link and X-Headers to the context model
-      if (context) {
+      // Save all Link and X-Headers to the meta model
+      if (meta) {
         response.headers.forEach((value, key) => {
           if (key === 'Link') {
-            context.set('links', parseLinks(value));
+            meta.set('links', parseLinks(value));
           } else if (key[1] === '-' && key[0].toLowerCase() === 'x') {
             const underscoreKey = key.substr(2).replace(/-/g, '_');
-            context.set(syncCamelCase ? toCamelCase(underscoreKey) : underscoreKey, value);
+            meta.set(syncCamelCase ? toCamelCase(underscoreKey) : underscoreKey, value);
           }
         });
       }
@@ -127,7 +131,7 @@ export function sync(options) {
       return response.text();
     })
     .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
-    .then(data => (unwrap ? unwrap(data, context) : data))
+    .then(data => (unwrap ? unwrap(data, meta) : data))
     .catch(err => {
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();

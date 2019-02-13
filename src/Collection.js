@@ -6,16 +6,18 @@ import { extendObject, generateCid, getAttr } from './utils';
 
 /**
  * Collection is manages an array of items (Model instances).
- * Updates observers with add:<cid>, remove:<cid>, reset, sync:fetch|save, and sort
- * @param {Array|Collection} [items] - An array or collection of items to initially add
+ * Updates observers with the following:
+ * add|remove:<cid>, reset, request|sync|error:fetch|save, and sort
+ * @param {Array|Collection} [items] - An array or collection of items to initialy add
  * @class
  */
 class Collection extends Observable {
   constructor(items) {
     super();
     this.cid = generateCid();
-    this.comparator = null;
+    this.comparator = this.comparator || null;
     this.items = [];
+    this.meta = new Model();
     this.add(Array.isArray(items) ? this.parse(items) : items);
   }
 
@@ -29,12 +31,18 @@ class Collection extends Observable {
     return Array.from(this.items);
   }
 
-  /** Creates a copy of the collection without any observers. */
-  clone() {
+  /**
+   * Creates a copy of the collection without any of the observers.
+   * @param {Object|Number} [args] - args to filter or slice begin index on the cloned items
+   * @param {Number} [end] - slice end index on the cloned items
+   */
+  clone(args, end) {
     const proto = Object.getPrototypeOf(this);
     const c = Object.create(proto);
-    c.items = Array.from(this.items);
+    c.items = typeof args === 'number' ? this.slice(args, end) : this.filter(args || (() => true));
+    c.meta = this.meta ? this.meta.clone() : null;
     c.comparator = this.comparator;
+    c.sort(c.comparator);
     return c;
   }
 
@@ -128,27 +136,35 @@ class Collection extends Observable {
   }
 
   /**
-   * Returns a new clone of the collection with items filtered.
-   * @param {*} args - () => {} or {id: 12.. params} - return a new collection of matching items
+   * Returns an array of the collection with items filtered.
+   * @param {Object|Function} args - the args or callback to use e.g. () => {} or {id: 12.. params}
    */
   filter(args) {
     let callback = args;
-    const clone = this.clone();
     if (typeof callback !== 'function') {
       const keys = Object.keys(args);
       callback = item => {
         // Allow each arg to be a value or regex
-        for (let arg, value, i = 0; i < keys.length; i += 1) {
-          arg = args[i];
-          value = item.attributes[keys[i]];
+        for (let arg, key, value, i = 0; i < keys.length; i += 1) {
+          key = keys[i];
+          value = key === 'id' ? item.id : item.get(key);
+          arg = args[key];
           // eslint-disable-next-line eqeqeq
           if ((arg instanceof RegExp && !arg.test(value)) || arg != value) return false;
         }
         return true;
       };
     }
-    clone.items = this.items.filter(callback);
-    return clone;
+    return this.items.filter(callback);
+  }
+
+  /**
+   * Slice the collection into an array, same as the Array.slice function
+   * @param {Number} [begin] - same as Array.slice
+   * @param {Number} [end] - same as Array.slice
+   */
+  slice(begin, end) {
+    return this.items.slice(begin, end);
   }
 
   /** Returns true if there is an item matching the filter args. */
@@ -158,8 +174,8 @@ class Collection extends Observable {
   }
 
   /** Returns the first item matching the filter args. */
-  get(args) {
-    return this.filter(args).at(0);
+  find(args) {
+    return this.filter(args)[0];
   }
 
   /**
@@ -168,6 +184,14 @@ class Collection extends Observable {
    */
   at(index) {
     return this.items[index];
+  }
+
+  /**
+   * Get an item by id.
+   * @param {Number|Model} id - The id or model to get by id
+   */
+  get(id) {
+    return this.find({ id: id instanceof Model ? id.id : id });
   }
 
   /**
@@ -256,11 +280,12 @@ class Collection extends Observable {
    * @returns A Promise that will resolve with this collection instance
    */
   fetch(options = {}) {
-    const syncOptions = extendObject({ method: 'GET' }, options);
+    const syncOptions = extendObject({ method: 'GET', meta: this.meta }, options);
     syncOptions.url = this.url(options, 'fetch');
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable;
     return new Promise((resolve, reject) => {
+      this.invokeObservers('request', 'fetch');
       this.sync(syncOptions)
         .then(this.parse.bind(this))
         .then(data => {
@@ -268,7 +293,10 @@ class Collection extends Observable {
           this.invokeObservers('sync', 'fetch');
           resolve(this);
         })
-        .catch(reject);
+        .catch(err => {
+          this.invokeObservers('error', 'fetch');
+          reject(err);
+        });
     });
   }
 
@@ -283,12 +311,16 @@ class Collection extends Observable {
     this._cancelable = syncOptions.cancelable || new Cancelable();
     syncOptions.cancelable = this._cancelable;
     const dirtyCollection = this.filter(item => !item.isDirty);
-    const cb = model => {
-      const item = dirtyCollection.remove(model || dirtyCollection.at(0));
-      if (!item) return this;
-      return item.save(syncOptions).then(cb);
-    };
-    return Promise.resolve(null).then(cb);
+    this.invokeObservers('request', 'fetch');
+    return Promise.all(dirtyCollection.forEach(item => item.save(syncOptions)))
+      .then(() => {
+        this.invokeObservers('sync', 'fetch');
+        return this;
+      })
+      .catch(err => {
+        this.invokeObservers('error', 'fetch');
+        throw err;
+      });
   }
 
   /** Cancel the current sync operation (fetch or save). */

@@ -21,7 +21,7 @@ users
     assert.strictEqual(users.at(2).id, 11);
 
     const filtered = users.filter(item => item.id < 6);
-    assert(filtered instanceof Collection);
+    assert(filtered instanceof Array);
     assert.strictEqual(filtered.length, 5);
   })
   .catch(err => {
