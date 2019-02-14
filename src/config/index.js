@@ -11,5 +11,5 @@ export default {
   formatErrorMessage,
   sync,
   syncConfig,
-  validateTimeout: 500,
+  autoValidate: -1,
 };

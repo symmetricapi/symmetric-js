@@ -19,7 +19,7 @@ THe built-in sync function requires a fetch compatible function on window/self/ 
 - `formatErrorMessage` - function to format errors
 - `sync` - function that wraps the call to `fetch()`
 - `syncConfig` - additional settings for the built-in sync function, see sync below
-- `validateTimeout` - auto validate model rules after X number of ms after a `set()`
+- `autoValidate` - auto validate model rules after X ms from a change - use -1 to disable (default) or 0 to run immediate
 
 ## sync function
 

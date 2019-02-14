@@ -20,6 +20,7 @@ class Model extends Observable {
     this.dirtyAttributes = {};
     this.errors = {};
     this.collection = null;
+    this.autoValidate = config.autoValidate;
     extendObject(
       this.attributes,
       this.defaults(),
@@ -141,8 +142,12 @@ class Model extends Observable {
   }
 
   _setValidateTimeout() {
+    const ms = this.autoValidate;
     clearTimeout(this._vtid);
-    this._vtid = setTimeout(this.validate.bind(this), config.validateTimeout);
+    if (ms !== -1) {
+      if (ms) this._vtid = setTimeout(this.validate.bind(this), ms);
+      else this.validate();
+    }
   }
 
   /**
