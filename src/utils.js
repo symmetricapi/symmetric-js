@@ -137,6 +137,19 @@ export function isSameOrigin(url) {
   return url.substr(0, origin.length) === origin;
 }
 
+/** Return the origin part of a url (protocol, hostname, and port) */
+export function extractOrigin(url) {
+  const index = url.indexOf('://');
+  if (index === -1) return '';
+  return url.substr(0, url.indexOf('/', index + 3)) || url;
+}
+
+/** Returns the entire URL without the origin prefix */
+export function extractRelativeUrl(url) {
+  return url.substr(extractOrigin(url).length);
+}
+
+/** Parse Link headers and extract their attributes */
 export function parseLinks(value) {
   // https://tools.ietf.org/html/rfc5988#page-4
   const links = [];

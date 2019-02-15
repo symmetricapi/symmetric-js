@@ -1,3 +1,4 @@
+import batchFetch from './batchFetch';
 import CancelError from '../CancelError';
 import * as SyncErrorCls from '../SyncError';
 import {
@@ -20,8 +21,11 @@ export const syncConfig = {
   saveSnakeCase: true,
   querySnakeCase: true,
   saveEncoding: 'json',
+  saveArrayName: 'data',
   csrfCookieName: 'csrftoken',
   csrfHeaderName: 'X-CSRFToken',
+  batchTimeout: -1,
+  batchUrl: '/',
   auth: null,
   unwrap: null,
   syncErrorCls: SyncErrorCls,
@@ -37,8 +41,11 @@ export function sync(options) {
     saveSnakeCase = syncConfig.saveSnakeCase,
     querySnakeCase = syncConfig.querySnakeCase,
     saveEncoding = syncConfig.saveEncoding,
+    saveArrayName = syncConfig.saveArrayName,
     csrfCookieName = syncConfig.csrfCookieName,
     csrfHeaderName = syncConfig.csrfHeaderName,
+    batchTimeout = syncConfig.batchTimeout,
+    batchUrl = syncConfig.batchUrl,
     auth = syncConfig.auth,
     unwrap = syncConfig.unwrap,
     syncErrorCls = syncConfig.syncErrorCls,
@@ -66,9 +73,8 @@ export function sync(options) {
     if (saveEncoding === 'form' || saveEncoding === 'form-json') {
       const formJson = saveEncoding === 'form-json';
       let data = options.data.toJSON();
-      if (saveSnakeCase) {
-        data = snakeCaseObject(data);
-      }
+      if (Array.isArray(data)) data = { [saveArrayName]: data };
+      if (saveSnakeCase) data = snakeCaseObject(data);
       contentType = 'application/x-www-form-urlencoded';
       body = new FormData();
       Object.keys(data).forEach(key => {
@@ -78,8 +84,8 @@ export function sync(options) {
       contentType = 'application/json';
       body = JSON.stringify(options.data, replacer);
     }
-    if (!headers['content-type']) {
-      headers['content-type'] = contentType;
+    if (!headers['Content-Type']) {
+      headers['Content-Type'] = contentType;
     }
   }
   // If cancelable object is set then create an AbortController if possible
@@ -105,7 +111,7 @@ export function sync(options) {
     auth.prepare(init, { saveEncoding, saveSnakeCase, querySnakeCase });
   }
 
-  return fetch(init.url, init)
+  return (batchTimeout === -1 ? fetch(init.url, init) : batchFetch(batchUrl, init, batchTimeout))
     .then(response => {
       // Detect if there is no AbortController, but the fetch was canceled anyways
       if (cancelable && cancelable.isCanceled) {

@@ -1,4 +1,4 @@
-import { getRoot } from './utils';
+import { extendObject, getRoot } from './utils';
 
 const clsMap = {};
 const root = getRoot();
@@ -34,7 +34,7 @@ function isReplaceable(value) {
 
 function replacer(key, value) {
   if (isReplaceable(value)) {
-    const data = value.toJSON ? value.toJSON() : Object.assign({}, value);
+    const data = value.toJSON ? value.toJSON() : extendObject({}, value);
     const type = value.constructor.name;
     if (!isRevivable(data)) {
       return { data, type };

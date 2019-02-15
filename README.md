@@ -12,14 +12,16 @@ THe built-in sync function requires a fetch compatible function on window/self/ 
 
 ## Configuration
 
+- `autoValidate` - auto validate model rules after X ms from a change - use -1 (default) to disable or 0 to run immediate
 - `encoders` - dictionary of encoding (converting to a string) functions keyed by types
 - `decoders` - dictionary of decoding (converting from a string) functions keyed by types
 - `inputEncodings` - dictionary of field types that are be used ONLY with encoding/decoding user input
 - `formats` - dictionary of field types to RegExp objects or functions that return a boolean
 - `formatErrorMessage` - function to format errors
+- `batch` - function to convert an array of fetch init objects into a single batched fetch init
+- `unbatch` - function to convert a single Response object to many Response objects
 - `sync` - function that wraps the call to `fetch()`
 - `syncConfig` - additional settings for the built-in sync function, see sync below
-- `autoValidate` - auto validate model rules after X ms from a change - use -1 to disable (default) or 0 to run immediate
 
 ## sync function
 
@@ -36,7 +38,7 @@ Standard fetch options are:
 https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
 
 - `method` - defaults to 'GET'
-- `headers` - a dictionary of http headers to use
+- `headers` - a dictionary of http headers to use, if setting 'Content-Type' note it is case-sensitive to avoid conflicts
 - `body` - the body of the request
 - `mode` - defaults to 'same-origin'
 - `credentials` - defaults to 'same-origin'
@@ -49,8 +51,11 @@ Additional options with defaults provided by `config.syncConfig` are:
 - `saveSnakeCase` - defaults to true
 - `querySnakeCase` - defaults to true
 - `saveEncoding` - one of the following strings `json`, `form`, or `form-json`, defaults to `json`
+- `saveArrayName` - when `saveEncoding` is `form` or `form-json`, the form name to use when data is just an array
 - `csrfCookieName` - defaults to 'csrftoken'
 - `csrfHeaderName` - defaults to 'X-CSRFToken'
+- `batchTimeout` - will queue requests that happen within this timeframe into a single request, -1 (default) to disable or >= 0 to enable
+- `batchUrl` - the backend url that accepts batched requests
 - `auth` - an optional single auth object to use for all sync operations, defaults to null
 - `unwrap` - function to unwrap and enveloped response and return the extracted data `unwrap(data, meta) => unwrapped`, defaults to null
 - `syncErrorCls` - the error class to use when throwing a response error, receives a Response object in the constructor
