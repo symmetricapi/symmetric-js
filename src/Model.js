@@ -77,7 +77,7 @@ class Model extends Observable {
   }
 
   /** @member {Boolean} */
-  get isDeleted() {
+  get isDestroyed() {
     return !(this.idAttribute in this.attributes) && this.idAttribute in this.dirtyAttributes;
   }
 
@@ -157,7 +157,7 @@ class Model extends Observable {
    * @param {*} value - The value of the attribute or undefined to unset() the key
    */
   set(key, value) {
-    if (this.isDeleted) throw new Error('Attempting to modify model after it has been deleted.');
+    if (this.isDestroyed) throw new Error('Attempting to modify a destroyed model.');
     if (isPlainObject(key)) {
       Object.keys(key).forEach(k => {
         this.set(k, key[k]);
@@ -166,13 +166,13 @@ class Model extends Observable {
     }
     if (!key || !key.length) return this;
     if (key === 'id' && this.idAttribute !== 'id') return this.set(this.idAttribute, value);
-    if (value === undefined) return this.unset(key);
     if (this.attributes[key] !== value) {
       // Save the key as an official dirty value if first time dirty
       if (!this.isNew && key in this.attributes && !(key in this.dirtyAttributes)) {
         this.dirtyAttributes[key] = this.attributes[key];
       }
-      this.attributes[key] = value;
+      if (value === undefined) delete this.attributes[key];
+      else this.attributes[key] = value;
       // Remove dirty if reverted
       if (this.dirtyAttributes[key] === value) {
         delete this.dirtyAttributes[key];
@@ -188,12 +188,7 @@ class Model extends Observable {
    * @param {string} key - The attribute key to remove
    */
   unset(key) {
-    if (this.isDeleted) throw new Error('Attempting to modify model after it has been deleted.');
-    if (key === 'id' && this.idAttribute !== 'id') return this.unset(this.idAttribute);
-    delete this.attributes[key];
-    this.invokeObservers('change', key);
-    this._setValidateTimeout();
-    return this;
+    return this.set(key, undefined);
   }
 
   /**
@@ -394,7 +389,7 @@ class Model extends Observable {
       this.invokeObservers('request', 'destroy');
       this.sync(syncOptions)
         .then(() => {
-          // Set as deleted by unsetting the id
+          // Set as destroyed by unsetting the id
           this.unset(this.idAttribute);
           // Remove the collection if one is set
           if (this.collection) this.collection.remove(this);
