@@ -51,6 +51,16 @@ class Collection extends Observable {
     return this.items.length;
   }
 
+  /** @member {Boolean} */
+  get isEmpty() {
+    return !this.items.length;
+  }
+
+  /** @member {Boolean} */
+  get isSyncing() {
+    return !(this._cancelable && this._cancelable.isValid);
+  }
+
   /**
    * Add an item or items to the collection.
    * Invokes an "add" notification and sorts the new array if comparator is set.
@@ -289,6 +299,7 @@ class Collection extends Observable {
       this.sync(syncOptions)
         .then(this.parse.bind(this))
         .then(data => {
+          if (options.reset) this.reset();
           this.add(data);
           this.invokeObservers('sync', 'fetch');
           resolve(this);

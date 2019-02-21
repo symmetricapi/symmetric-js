@@ -17,9 +17,11 @@ export default {
   },
   plugins: [
     resolve(),
-    babel(Object.assign(babelrc, {
-      babelrc: false,
-      exclude: 'node_modules/**',
-    })),
+    babel(
+      Object.assign(babelrc, {
+        babelrc: false,
+        exclude: 'node_modules/**',
+      }),
+    ),
   ],
 };

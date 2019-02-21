@@ -10,6 +10,12 @@ export function getRoot(key) {
   return key ? root[key] : root;
 }
 
+/** Extract data if a toJSON function is implemented. */
+export function getData(obj) {
+  if (obj && obj.toJSON) return obj.toJSON();
+  return obj;
+}
+
 /** Returns true if the given object is an instance of Object and not of a subclass or other type */
 export function isPlainObject(obj) {
   // First check of just obj is needed because typeof null is object

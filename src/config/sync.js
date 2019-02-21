@@ -3,6 +3,7 @@ import CancelError from '../CancelError';
 import * as SyncErrorCls from '../SyncError';
 import {
   getRoot,
+  getData,
   extendObject,
   prepareUrl,
   isSameOrigin,
@@ -53,13 +54,13 @@ export function sync(options) {
     cancelable,
   } = options;
   const SyncError = syncErrorCls;
-  const url = prepareUrl(options.url, options.params, querySnakeCase);
+  const url = prepareUrl(options.url, getData(options.params), querySnakeCase);
   const headers = extendObject({}, options.headers);
   let { body } = options;
   let signal = null;
 
   // If url does not include an origin then include csrf tokens
-  if (csrfHeaderName && isSameOrigin(options.url)) {
+  if (csrfHeaderName && isSameOrigin(url)) {
     const document = getRoot('document');
     if (document && document.cookie) {
       const match = new RegExp(`${csrfCookieName}=([^;\\s]*)(?:[;\\s]|$)`).exec(document.cookie);
@@ -72,7 +73,7 @@ export function sync(options) {
     let contentType;
     if (saveEncoding === 'form' || saveEncoding === 'form-json') {
       const formJson = saveEncoding === 'form-json';
-      let data = options.data.toJSON();
+      let data = getData(options.data);
       if (Array.isArray(data)) data = { [saveArrayName]: data };
       if (saveSnakeCase) data = snakeCaseObject(data);
       contentType = 'application/x-www-form-urlencoded';
@@ -119,6 +120,8 @@ export function sync(options) {
       } else if (!response.ok) {
         throw new SyncError(response);
       }
+      // Invalidate the cancelable
+      if (cancelable) cancelable.invalidate();
       // Save all Link and X-Headers to the meta model
       if (meta) {
         response.headers.forEach((value, key) => {
@@ -130,15 +133,14 @@ export function sync(options) {
           }
         });
       }
-      // Invalidate the cancelable
-      if (cancelable) {
-        cancelable.invalidate();
-      }
       return response.text();
     })
     .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
     .then(data => (unwrap ? unwrap(data, meta) : data))
     .catch(err => {
+      // Invalidate the cancelable
+      if (cancelable) cancelable.invalidate();
+      // Throw a CancelError if needed
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();
       }

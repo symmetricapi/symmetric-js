@@ -91,6 +91,11 @@ class Model extends Observable {
     return !Object.keys(this.errors).length;
   }
 
+  /** @member {Boolean} */
+  get isSyncing() {
+    return !(this._cancelable && this._cancelable.isValid);
+  }
+
   /** Override to return an object to be used as default attributes on a new instance. */
   defaults() {}
 
