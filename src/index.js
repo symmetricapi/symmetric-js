@@ -9,7 +9,7 @@ import { serialize, deserialize, register } from './serialization';
 import * as utils from './utils';
 import validate from './validate';
 
-export default {
+export {
   config,
   Auth,
   Cancelable,

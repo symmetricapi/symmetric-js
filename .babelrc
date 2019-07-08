@@ -1,7 +1,10 @@
 {
   "presets": [
-    ["es2015", {
-      "modules": "commonjs"
-    }]
+    [
+      "es2015",
+      {
+        "modules": "commonjs"
+      }
+    ]
   ]
 }

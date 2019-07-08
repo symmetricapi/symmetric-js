@@ -4,11 +4,13 @@ Symmetric provides observable model and collection classes with support for fiel
 
 ## Requirements
 
-THe built-in sync function requires a fetch compatible function on window/self/ or global.
+The built-in sync function requires a fetch compatible function on window/self/ or global.
 
 - https://github.com/github/fetch
 - https://github.com/bitinn/node-fetch
 - https://github.com/matthew-andrews/isomorphic-fetch
+
+**NOTE:** When using create-react-app, fetch is already included. No need to add an additional dependency.
 
 ## Configuration
 
@@ -52,8 +54,9 @@ Additional options with defaults provided by `config.syncConfig` are:
 - `querySnakeCase` - defaults to true
 - `saveEncoding` - one of the following strings `json`, `form`, or `form-json`, defaults to `json`
 - `saveArrayName` - when `saveEncoding` is `form` or `form-json`, the form name to use when data is just an array
-- `csrfCookieName` - defaults to 'csrftoken'
-- `csrfHeaderName` - defaults to 'X-CSRFToken'
+- `csrfCookieName` - defaults to `csrftoken`
+- `csrfHeaderName` - defaults to `X-CSRFToken`
+- `requestedWith` - value of the `X-Requested-With` header, defaults to `XMLHttpRequest`
 - `batchTimeout` - will queue requests that happen within this timeframe into a single request, -1 (default) to disable or >= 0 to enable
 - `batchUrl` - the backend url that accepts batched requests
 - `auth` - an optional single auth object to use for all sync operations, defaults to null

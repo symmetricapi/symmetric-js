@@ -12,6 +12,7 @@ import {
   camelCaseObject,
   snakeCaseObject,
 } from '../utils';
+import { deserialize } from '../serialization';
 
 const fetch = getRoot('fetch');
 const AbortController = getRoot('AbortController');
@@ -25,6 +26,7 @@ export const syncConfig = {
   saveArrayName: 'data',
   csrfCookieName: 'csrftoken',
   csrfHeaderName: 'X-CSRFToken',
+  requestedWith: 'XMLHttpRequest',
   batchTimeout: -1,
   batchUrl: '/',
   auth: null,
@@ -45,6 +47,7 @@ export function sync(options) {
     saveArrayName = syncConfig.saveArrayName,
     csrfCookieName = syncConfig.csrfCookieName,
     csrfHeaderName = syncConfig.csrfHeaderName,
+    requestedWith = syncConfig.requestedWith,
     batchTimeout = syncConfig.batchTimeout,
     batchUrl = syncConfig.batchUrl,
     auth = syncConfig.auth,
@@ -55,7 +58,7 @@ export function sync(options) {
   } = options;
   const SyncError = syncErrorCls;
   const url = prepareUrl(options.url, getData(options.params), querySnakeCase);
-  const headers = extendObject({}, options.headers);
+  const headers = extendObject({ 'X-Requested-With': requestedWith }, options.headers);
   let { body } = options;
   let signal = null;
 
@@ -137,6 +140,7 @@ export function sync(options) {
     })
     .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
     .then(data => (unwrap ? unwrap(data, meta) : data))
+    .then(data => (meta.get('mixed') ? deserialize(data) : data))
     .catch(err => {
       // Invalidate the cancelable
       if (cancelable) cancelable.invalidate();

@@ -1,6 +1,6 @@
 /* eslint no-param-reassign: 0 */
 import Model from './Model';
-import { prepareUrl, snakeCaseObject } from './utils';
+import { prepareUrl, snakeCaseObject, extendObject } from './utils';
 
 /**
  * A basic Auth model that implements apikey and OAuth2 request preparing.
@@ -9,6 +9,21 @@ import { prepareUrl, snakeCaseObject } from './utils';
 class Auth extends Model {
   defaults() {
     return { authType: 'bearer' };
+  }
+
+  /**
+   * Given a credentials model, login using with OAuth2 username password grant
+   * credentials - A model that should provide username/password fields.
+   * options - provide a url here or implement a url() in an Auth subclass
+   */
+  login(credentials, options = {}) {
+    credentials.set('grantType', 'password');
+    const syncOptions = extendObject(
+      { method: 'POST', saveEncoding: 'form', data: credentials },
+      options,
+    );
+    syncOptions.url = this.url(syncOptions, 'fetch');
+    return this._sync(syncOptions, 'fetch');
   }
 
   /**
