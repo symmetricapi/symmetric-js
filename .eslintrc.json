@@ -1,31 +1,110 @@
 {
-  "extends": "eslint-config-airbnb",
+  "extends": ["eslint:recommended", "plugin:import/recommended"],
+  "plugins": ["import"],
+  "root": true,
   "env": {
+    "es6": true,
     "browser": true,
-    "node": true
+    "commonjs": true,
+    "worker": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "allowImportExportEverywhere": false,
+    "codeFrame": true
   },
   "rules": {
-    "class-methods-use-this": [
+    "arrow-body-style": ["error", "as-needed"],
+    "arrow-parens": ["error", "as-needed"],
+    "brace-style": [
       "error",
-      { "exceptMethods": ["defaults", "field", "url", "sync", "parse", "model", "toJSON"] }
+      "1tbs",
+      {
+        "allowSingleLine": true
+      }
     ],
-    "no-bitwise": 0,
-    "no-underscore-dangle": 0,
+    "block-scoped-var": "error",
+    "camelcase": "error",
+    "consistent-return": "error",
+    "curly": ["error", "multi-line"],
+    "dot-location": ["error", "property"],
+    "dot-notation": [
+      "error",
+      {
+        "allowPattern": "^[a-z]+(_[a-z]+)+$"
+      }
+    ],
+    "eqeqeq": "error",
+    "function-paren-newline": ["error", "consistent"],
+    "no-cond-assign": ["error", "except-parens"],
+    "no-confusing-arrow": [
+      "error",
+      {
+        "allowParens": true
+      }
+    ],
+    "no-else-return": "error",
+    "no-empty": [
+      "error",
+      {
+        "allowEmptyCatch": true
+      }
+    ],
+    "no-floating-decimal": "error",
+    "no-loop-func": "error",
+    "no-multi-str": "error",
+    "no-new": "error",
+    "no-new-wrappers": "error",
+    "no-param-reassign": [
+      "error",
+      {
+        "props": false
+      }
+    ],
+    "no-path-concat": "error",
+    "no-shadow": "error",
+    "no-shadow-restricted-names": "error",
     "no-unused-vars": [
       "error",
-      { "varsIgnorePattern": "^h$", "argsIgnorePattern": "^item|operation$" }
+      {
+        "varsIgnorePattern": "^React|h$"
+      }
     ],
-    "arrow-parens": ["error", "as-needed"],
-    "function-paren-newline": ["error", "consistent"],
-    "no-param-reassign": ["error", { "props": false }],
-
-    "jsx-a11y/anchor-has-content": 1,
-    "jsx-a11y/href-no-hash": 0,
-    "jsx-a11y/no-static-element-interactions": 1,
-
-    "react/jsx-filename-extension": [1, { "extensions": [".js"] }],
-    "react/no-did-mount-set-state": 1,
-    "react/prop-types": 0,
-    "react/react-in-jsx-scope": 0
+    "no-use-before-define": "error",
+    "no-useless-computed-key": "error",
+    "no-useless-concat": "error",
+    "no-var": "error",
+    "object-shorthand": [
+      "error",
+      "always",
+      {
+        "avoidQuotes": true
+      }
+    ],
+    "prefer-arrow-callback": "error",
+    "prefer-const": "error",
+    "prefer-destructuring": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "prefer-template": "error",
+    "strict": ["error", "never"],
+    "wrap-iife": ["error", "outside"],
+    "import/first": ["error", "absolute-first"],
+    "import/exports-last": "error",
+    "import/prefer-default-export": "error"
+  },
+  "globals": {
+    "process": "readonly",
+    "__dirname": "readonly",
+    "__filename": "readonly"
+  },
+  "parser": "babel-eslint",
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["./src"]
+      }
+    }
   }
 }

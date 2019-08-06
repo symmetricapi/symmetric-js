@@ -1,6 +1,8 @@
 /* eslint guard-for-in: 0, no-restricted-syntax: 0, no-param-reassign: 0 */
 import config from './config';
 
+let nextCid = 0;
+
 /** Returns the root window or global object. */
 export function getRoot(key) {
   // self will support both in-browser window and WebWorker
@@ -186,8 +188,6 @@ export function decode(value, type) {
   if (type in config.decoders) return config.decoders[type](value);
   return value;
 }
-
-let nextCid = 0;
 
 /** Generate a new unique client id. */
 export function generateCid() {
