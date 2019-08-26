@@ -1,6 +1,6 @@
 {
   "name": "symmetric-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Symmetric provides observable model and collection classes with support for field specifications that mirror backend sources with encoding functions and validation rules.",
   "keywords": [
     "react",
@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "build": "./node_modules/.bin/rollup -c",
-    "release": "git tag $npm_package_version && git push --tags && yarn publish --no-lockfile",
+    "release": "yarn build && git tag $npm_package_version && git push --tags && yarn publish --no-lockfile",
     "test": "node test/index.js"
   },
   "repository": {
