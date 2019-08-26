@@ -80,10 +80,14 @@ export function sync(options) {
       if (Array.isArray(data)) data = { [saveArrayName]: data };
       if (saveSnakeCase) data = snakeCaseObject(data);
       contentType = 'application/x-www-form-urlencoded';
-      body = new FormData();
-      Object.keys(data).forEach(key => {
-        body.set(key, formJson ? JSON.stringify(data[key], replacer) : data[key]);
-      });
+      body = Object.keys(data)
+        .map(
+          key =>
+            `${key}=${encodeURIComponent(
+              formJson ? JSON.stringify(data[key], replacer) : data[key],
+            )}`,
+        )
+        .join('&');
     } else {
       contentType = 'application/json';
       body = JSON.stringify(options.data, replacer);

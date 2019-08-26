@@ -235,6 +235,16 @@ class Model extends Observable {
   }
 
   /**
+   * Format all validation error messages into readable strings
+   * @returns object hashed by the field key
+   */
+  messages() {
+    const messages = {};
+    Object.keys(this.errors).forEach(key => (messages[key] = this.message(key)));
+    return messages;
+  }
+
+  /**
    * Returns true if the key has a validation error.
    * @param {*} key - The attribute key
    */

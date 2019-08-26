@@ -8,9 +8,9 @@ export default function formatErrorMessage(field, error, value) {
     case 'required':
       return `${title} is required`;
     case 'min':
-      return `${len}${title} must be greater than or equal to ${rule.min}${chars}`;
+      return `${len}${title.toLowerCase()} must be greater than or equal to ${rule.min}${chars}`;
     case 'max':
-      return `${len}${title} must be less than or equal to ${rule.max}${chars}`;
+      return `${len}${title.toLowerCase()} must be less than or equal to ${rule.max}${chars}`;
     case 'format':
       if (typeof rule.format === 'string') {
         return `${title} is not a valid ${rule.format}`;

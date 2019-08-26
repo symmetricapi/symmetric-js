@@ -1,6 +1,6 @@
 {
   "name": "symmetric-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Symmetric provides observable model and collection classes with support for field specifications that mirror backend sources with encoding functions and validation rules.",
   "keywords": [
     "react",
