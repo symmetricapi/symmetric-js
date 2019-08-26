@@ -144,7 +144,7 @@ export function sync(options) {
     })
     .then(response => JSON.parse(response, syncCamelCase ? (k, v) => camelCaseObject(v) : null))
     .then(data => (unwrap ? unwrap(data, meta) : data))
-    .then(data => (meta.get('mixed') ? deserialize(data) : data))
+    .then(data => (meta && meta.get('mixed') ? deserialize(data) : data))
     .catch(err => {
       // Invalidate the cancelable
       if (cancelable) cancelable.invalidate();
