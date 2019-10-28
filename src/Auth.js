@@ -11,6 +11,11 @@ class Auth extends Model {
     return { authType: 'bearer' };
   }
 
+  // eslint-disable-next-line no-unused-vars
+  origin(request) {
+    return '';
+  }
+
   /**
    * Given a credentials model, login using with OAuth2 username password grant
    * credentials - A model that should provide username/password fields.
@@ -33,11 +38,18 @@ class Auth extends Model {
    * apikey - just a key to add to the query string of each request taken from apikey attribute
    * bearer - set the authorization: bearer header with the accessToken attribute
    * token - combine the accessToken attribute with the existing request data
+   * none - no auth, just update the requests with a common origin
    * @param {Object} request - complete options that will be passed into fetch()
+   * @param {Object} options - sync encoding options: saveEncoding, saveSnakeCase, querySnakeCase
    */
   prepare(request, options) {
     const authType = this.get('authType');
     const { saveEncoding, saveSnakeCase, querySnakeCase } = options;
+    const origin = this.origin(request);
+
+    if (origin && request.url.indexOf('://') === -1) {
+      request.url = `${origin}${request.url}`;
+    }
 
     if (authType === 'apikey') {
       request.url = prepareUrl(request.url, { apikey: this.get('apikey') }, querySnakeCase);
