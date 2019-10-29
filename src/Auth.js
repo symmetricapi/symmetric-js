@@ -11,8 +11,9 @@ class Auth extends Model {
     return { authType: 'bearer' };
   }
 
+  /** Return a possibly different origin given a url. */
   // eslint-disable-next-line no-unused-vars
-  origin(request) {
+  origin(url) {
     return '';
   }
 
@@ -27,7 +28,12 @@ class Auth extends Model {
       { method: 'POST', saveEncoding: 'form', data: credentials },
       options,
     );
-    syncOptions.url = this.url(syncOptions, 'fetch');
+    let url = this.url(syncOptions, 'fetch');
+    const origin = this.origin(url);
+    if (origin && url.indexOf('://') === -1) {
+      url = `${origin}${url}`;
+    }
+    syncOptions.url = url;
     return this._sync(syncOptions, 'fetch');
   }
 
@@ -45,7 +51,7 @@ class Auth extends Model {
   prepare(request, options) {
     const authType = this.get('authType');
     const { saveEncoding, saveSnakeCase, querySnakeCase } = options;
-    const origin = this.origin(request);
+    const origin = this.origin(request.url);
 
     if (origin && request.url.indexOf('://') === -1) {
       request.url = `${origin}${request.url}`;
