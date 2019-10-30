@@ -1,6 +1,6 @@
 /* eslint no-param-reassign: 0 */
 import Model from './Model';
-import { prepareUrl, snakeCaseObject, extendObject } from './utils';
+import { prepareUrl, snakeCaseObject, extendObject, isSameOrigin, isFileOrigin } from './utils';
 
 /**
  * A basic Auth model that implements apikey and OAuth2 request preparing.
@@ -32,6 +32,7 @@ class Auth extends Model {
     const origin = this.origin(url);
     if (origin && url.indexOf('://') === -1) {
       url = `${origin}${url}`;
+      if (!isSameOrigin(url) && !isFileOrigin()) syncOptions.mode = 'cors';
     }
     syncOptions.url = url;
     return this._sync(syncOptions, 'fetch');
@@ -55,6 +56,7 @@ class Auth extends Model {
 
     if (origin && request.url.indexOf('://') === -1) {
       request.url = `${origin}${request.url}`;
+      if (!isSameOrigin(request.url) && !isFileOrigin()) request.mode = 'cors';
     }
 
     if (authType === 'apikey') {

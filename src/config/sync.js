@@ -107,7 +107,7 @@ export function sync(options) {
     {
       method: 'GET',
       mode: 'same-origin',
-      credentials: 'same-origin',
+      credentials: 'include',
       cache: 'no-cache',
       redirect: 'follow',
       signal,

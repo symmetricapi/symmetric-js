@@ -145,6 +145,12 @@ export function isSameOrigin(url) {
   return url.substr(0, origin.length) === origin;
 }
 
+export function isFileOrigin() {
+  const location = getRoot('location');
+  if (location && location.protocol === 'file:') return false;
+  return false;
+}
+
 /** Return the origin part of a url (protocol, hostname, and port) */
 export function extractOrigin(url) {
   const index = url.indexOf('://');
