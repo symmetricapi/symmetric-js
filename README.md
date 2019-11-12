@@ -61,7 +61,7 @@ Additional options with defaults provided by `config.syncConfig` are:
 - `batchUrl` - the backend url that accepts batched requests
 - `auth` - an optional single auth object to use for all sync operations, defaults to null
 - `unwrap` - function to unwrap and enveloped response and return the extracted data `unwrap(data, meta) => unwrapped`, defaults to null
-- `errorFactory` - receives a Response object and should throw an error or return a Promise that will eventually throw an error
+- `errorFactory` - receives a Response object and should return or eventually resolve to rejected Promise
 - `errorHandler` - a callback to globally handle errors before they are thrown to the next Promise rejection handler
 
 ## Subclassing
