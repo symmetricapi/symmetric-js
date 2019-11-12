@@ -154,9 +154,8 @@ export function sync(options) {
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();
       }
-      // Allow a global error handler to handle it first
-      if (!errorHandler || !errorHandler(err)) {
-        throw err;
-      }
+      // Allow a global error handler to handle it first before throwing the final error
+      if (errorHandler) errorHandler(err);
+      throw err;
     });
 }
