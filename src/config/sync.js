@@ -1,6 +1,6 @@
 import batchFetch from './batchFetch';
 import CancelError from '../CancelError';
-import * as SyncErrorCls from '../SyncError';
+import SyncError from '../SyncError';
 import {
   getRoot,
   getData,
@@ -31,7 +31,8 @@ export const syncConfig = {
   batchUrl: '/',
   auth: null,
   unwrap: null,
-  syncErrorCls: SyncErrorCls,
+  errorCls: SyncError,
+  errorHandler: null,
 };
 
 /**
@@ -52,11 +53,12 @@ export function sync(options) {
     batchUrl = syncConfig.batchUrl,
     auth = syncConfig.auth,
     unwrap = syncConfig.unwrap,
-    syncErrorCls = syncConfig.syncErrorCls,
+    errorCls = syncConfig.errorCls,
+    errorHandler = syncConfig.errorHandler,
     meta,
     cancelable,
   } = options;
-  const SyncError = syncErrorCls;
+  const ErrorCls = errorCls;
   const url = prepareUrl(options.url, getData(options.params), querySnakeCase);
   const headers = extendObject({ 'X-Requested-With': requestedWith }, options.headers);
   let { body } = options;
@@ -125,7 +127,7 @@ export function sync(options) {
       if (cancelable && cancelable.isCanceled) {
         throw new CancelError();
       } else if (!response.ok) {
-        throw new SyncError(response);
+        throw new ErrorCls(response);
       }
       // Invalidate the cancelable
       if (cancelable) cancelable.invalidate();
@@ -152,6 +154,9 @@ export function sync(options) {
       if (err && AbortError && err instanceof AbortError) {
         throw new CancelError();
       }
-      throw err;
+      // Allow a global error handler to handle it first
+      if (!errorHandler || !errorHandler(err)) {
+        throw err;
+      }
     });
 }
