@@ -31,7 +31,10 @@ export const syncConfig = {
   batchUrl: '/',
   auth: null,
   unwrap: null,
-  errorCls: SyncError,
+  errorFactory: response =>
+    response.text().then(data => {
+      throw new SyncError(response, JSON.parse(data));
+    }),
   errorHandler: null,
 };
 
@@ -53,12 +56,11 @@ export function sync(options) {
     batchUrl = syncConfig.batchUrl,
     auth = syncConfig.auth,
     unwrap = syncConfig.unwrap,
-    errorCls = syncConfig.errorCls,
+    errorFactory = syncConfig.errorFactory,
     errorHandler = syncConfig.errorHandler,
     meta,
     cancelable,
   } = options;
-  const ErrorCls = errorCls;
   const url = prepareUrl(options.url, getData(options.params), querySnakeCase);
   const headers = extendObject({ 'X-Requested-With': requestedWith }, options.headers);
   let { body } = options;
@@ -127,7 +129,7 @@ export function sync(options) {
       if (cancelable && cancelable.isCanceled) {
         throw new CancelError();
       } else if (!response.ok) {
-        throw new ErrorCls(response);
+        return errorFactory(response);
       }
       // Invalidate the cancelable
       if (cancelable) cancelable.invalidate();

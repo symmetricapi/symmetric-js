@@ -1,8 +1,7 @@
 class SyncError {
-  constructor(response) {
+  constructor(response, data) {
     // Standard error response with message and code in a JSON object
     if (response.headers.get('Content-Type') === 'application/json') {
-      const data = JSON.parse(response.text());
       this.message = data.message;
       this.code = data.code;
     } else {
