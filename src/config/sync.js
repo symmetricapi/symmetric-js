@@ -32,7 +32,7 @@ export const syncConfig = {
   auth: null,
   unwrap: null,
   errorFactory: response =>
-    response.text().then(data => Promise.reject(SyncError(response, JSON.parse(data)))),
+    response.text().then(data => Promise.reject(new SyncError(response, JSON.parse(data)))),
   errorHandler: null,
 };
 
