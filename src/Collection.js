@@ -213,6 +213,14 @@ class Collection extends Observable {
   }
 
   /**
+   * Map items in the collection.
+   * @param {Function} callback  - The function to call
+   */
+  map(callback, thisArg) {
+    return this.items.map(callback, thisArg);
+  }
+
+  /**
    * Sort the items in place. When sorting using an attribute key a "-" prefix means descending.
    * @param {Function|string} comparator - A comparator function or attribute key
    */
