@@ -285,7 +285,7 @@ class Model extends Observable {
     if (options.url) return options.url;
     if (this.collection) {
       const url = this.collection.url(options, operation);
-      if (!this.isNew()) return `${url.replace(/\/$/, '')}/${this.id}`;
+      if (!this.isNew) return `${url.replace(/\/$/, '')}/${this.id}`;
       return url;
     }
     return '';
