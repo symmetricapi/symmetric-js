@@ -39,6 +39,8 @@ class Collection extends Observable {
   clone(args, end) {
     const proto = Object.getPrototypeOf(this);
     const c = Object.create(proto);
+    c.observers = {};
+    c.cid = generateCid();
     c.items = typeof args === 'number' ? this.slice(args, end) : this.filter(args || (() => true));
     c.meta = this.meta ? this.meta.clone() : null;
     c.comparator = this.comparator;

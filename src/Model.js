@@ -53,6 +53,7 @@ class Model extends Observable {
   clone(asNew) {
     const proto = Object.getPrototypeOf(this);
     const model = Object.create(proto);
+    model.observers = {};
     model.cid = generateCid();
     model.idAttribute = this.idAttribute;
     model.attributes = copyObject(this.attributes);
