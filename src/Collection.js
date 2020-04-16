@@ -249,6 +249,8 @@ class Collection extends Observable {
     this.invokeObservers('sort');
   }
 
+  /* eslint-disable no-unused-vars */
+
   /**
    * Override to return the model class necessary to make a new instance with.
    * @param {Object} item - raw attribute data yet to be put into a model
@@ -267,6 +269,8 @@ class Collection extends Observable {
     if (options.url) return options.url;
     return '';
   }
+
+  /* eslint-enable no-unused-vars */
 
   /**
    * Override this to set shared options for subclassed collections before calling config.sync().
