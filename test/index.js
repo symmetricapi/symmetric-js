@@ -1,4 +1,4 @@
-require('babel-register');
+require('@babel/register');
 // require('whatwg-fetch');
 global.fetch = require('node-fetch');
 
