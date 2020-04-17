@@ -1,5 +1,5 @@
 import fs from 'fs';
-import resolve from 'rollup-plugin-node-resolve';
+import resolve from '@rollup/plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
 
 const pkg = JSON.parse(fs.readFileSync('./package.json'));
